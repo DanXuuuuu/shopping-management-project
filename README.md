@@ -36,13 +36,10 @@ A full-featured e-commerce web application with complete user authentication, pr
 - Express.js
 - MongoDB (Database)
 
-**Authentication:**
-- JWT (JSON Web Token)
-
 ## Team Members
-- Chunren Lian - [@LianCr]
-- Dan Xu - [@DanXuuuuu]
-- Xinrui Shi - [@xinrui-github-username]
+- Chunren Lian  
+- Dan Xu 
+- Xinrui Shi 
 
 ## Installation
 
@@ -115,6 +112,4 @@ project-root/
 2. Commit your changes
 3. Push to the branch
 4. Create a Pull Request
-
-## License
-MIT
+ 
