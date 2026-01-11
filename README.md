@@ -40,7 +40,7 @@ A full-featured e-commerce web application with complete user authentication, pr
 - JWT (JSON Web Token)
 
 ## Team Members
-- Chunren Lian - [@chunren-github-username]
+- Chunren Lian - [@LianCr]
 - Dan Xu - [@DanXuuuuu]
 - Xinrui Shi - [@xinrui-github-username]
 
