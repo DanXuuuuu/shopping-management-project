@@ -15,6 +15,11 @@ const app = express();
 // middleware
 app.use(cors()); //allow frontend visit  
 app.use(express.json()); //analysis the json format request 
+app.use('/api/auth', require('./routes/auth'));
+
+
+
+
 
 // test route
 app.get('/',(req, res)=>{
