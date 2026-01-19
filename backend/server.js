@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const errorHandler = require('./middleware/errorHandler');
 
 // here is read the env file 
 dotenv.config();
@@ -15,6 +16,7 @@ const app = express();
 // middleware
 app.use(cors()); //allow frontend visit  
 app.use(express.json()); //analysis the json format request 
+// router 
 app.use('/api/auth', require('./routes/auth'));
 
 
@@ -25,6 +27,9 @@ app.use('/api/auth', require('./routes/auth'));
 app.get('/',(req, res)=>{
     res.json({message:'backend running'});
 });
+
+// error middleware 
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 8080;

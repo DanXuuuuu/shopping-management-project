@@ -19,33 +19,35 @@ const generateToken = (userId) =>{
     );
 }
 
-
 // signup 
 
-exports.signup = async(req, res)=>{
+exports.signup = async(req, res, next)=>{
     try {
 
     const { email, username, password, confirmPassword } = req.body;
 
     // must finish all fields
     if(!email || !username || !password || !confirmPassword){
-        return res.status(400).json({
-            message: 'Please finish all fields'
-        });
+        const err = new Error('Please finish all fields');
+        err.statusCode =400;
+        return next(err);
+
+
     }
     // if password match confirmPass
 
     if(password !== confirmPassword){
-        return res.status(400).json({
-            message: 'Password does not match'
-        })
+        const err = new Error('Password does not match');
+        err.statusCode = 400;
+        return next(err);
     }
     //  check if user email already exist 
     const existingUser = await User.findOne({ email });
+
     if(existingUser){
-        return res.status(400).json({
-            message: 'User email already exists!'
-        });
+        const err = new Error('User email already exists');
+        err.statusCode = 400;
+        return next(err);
     }
     // if not exist create new here: 
     const newUser = new User({
@@ -69,41 +71,38 @@ exports.signup = async(req, res)=>{
             }
         })
     }catch(error){
-        res.status(500).json({
-            message:'Server error',
-            error: error.message
-        });
+       next(error);
     }
 };
 
 // login 
 
-exports.login = async(req, res)=>{
+exports.login = async(req, res, next)=>{
     try{
         const { email, password } = req.body;
 
         // login process (must have password and email)
         if(!email || !password) {
-            return res.status(400).json({
-                message: 'Please provide email and password'
-            });
+            const err = new Error('Please provide email and password');
+            err.statusCode =400;
+            return next(err);
         }
         // check the user exist 
         const user = await User.findOne({ email });
 
         if(!user){
-            return res.status(401).json({
-                message: 'Invalid email or password'
-            })
+            const err = new Error('Invalid email or password');
+            err.statusCode = 401;
+            return next(err);
         }
         
         // compare if the password match 
         const isValidPassword = await user.comparePassword(password);
 
         if(!isValidPassword){
-            return res.status(401).json({
-                message: 'Invalid email or password'
-            })
+            const err = new Error('Invalid email or password');
+            err.statusCode = 401;
+            return next(err);
         }
         const token = generateToken(user._id);
 
@@ -119,10 +118,7 @@ exports.login = async(req, res)=>{
         })
 
     }catch(error){
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        })
+         next(error);
 
     }
 };
