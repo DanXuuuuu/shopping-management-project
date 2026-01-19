@@ -1,7 +1,26 @@
 // deal with the logic of user auth (signup and login)
 
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 
+// generateJWT func
+const generateToken = (userId) =>{
+    // return encrypted token string
+    return jwt.sign(
+        // payload
+        {id: userId },
+        // secret key - encrypt
+        process.env.JWT_SECRET,
+        {
+            
+            //expire time:
+            expiresIn: process.env.JWT_EXPIRES_IN
+        }
+    );
+}
+
+
+// signup 
 
 exports.signup = async(req, res)=>{
     try {
@@ -22,7 +41,7 @@ exports.signup = async(req, res)=>{
         })
     }
     //  check if user email already exist 
-    const existingUser = await User.findOne({ email: email });
+    const existingUser = await User.findOne({ email });
     if(existingUser){
         return res.status(400).json({
             message: 'User email already exists!'
@@ -36,9 +55,13 @@ exports.signup = async(req, res)=>{
     });
     // save to db
     await newUser.save();
+    const token = generateToken(newUser._id);
+
+
     // register successful 
         res.status(201).json({
             message: 'User registered successfully',
+            token: token,
             user: {
                 id: newUser._id,
                 email: newUser.email,
@@ -53,7 +76,7 @@ exports.signup = async(req, res)=>{
     }
 };
 
-
+// login 
 
 exports.login = async(req, res)=>{
     try{
@@ -82,9 +105,12 @@ exports.login = async(req, res)=>{
                 message: 'Invalid email or password'
             })
         }
+        const token = generateToken(user._id);
+
         // login successful
         res.status(200).json({
             message: 'User logged in successful',
+            token: token,
             user: {
                 id: user._id,
                 username: user.username,
