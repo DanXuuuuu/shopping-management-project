@@ -6,13 +6,26 @@ const User = require('../models/User');
 exports.signup = async(req, res)=>{
     try {
 
-    const { email, username, password } = req.body;
+    const { email, username, password, confirmPassword } = req.body;
 
+    // must finish all fields
+    if(!email || !username || !password || !confirmPassword){
+        return res.status(400).json({
+            message: 'Please finish all fields'
+        });
+    }
+    // if password match confirmPass
+
+    if(password !== confirmPassword){
+        return res.status(400).json({
+            message: 'Password does not match'
+        })
+    }
     //  check if user email already exist 
     const existingUser = await User.findOne({ email: email });
     if(existingUser){
         return res.status(400).json({
-            message: 'User email already exist!'
+            message: 'User email already exists!'
         });
     }
     // if not exist create new here: 
@@ -24,7 +37,7 @@ exports.signup = async(req, res)=>{
     // save to db
     await newUser.save();
     // register successful 
-        res.status(200).json({
+        res.status(201).json({
             message: 'User registered successfully',
             user: {
                 id: newUser._id,
@@ -39,6 +52,7 @@ exports.signup = async(req, res)=>{
         });
     }
 };
+
 exports.login = async(req, res)=>{
     try{
         // not finish yet
