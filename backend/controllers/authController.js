@@ -53,11 +53,43 @@ exports.signup = async(req, res)=>{
     }
 };
 
+
+
 exports.login = async(req, res)=>{
     try{
-        // not finish yet
+        const { email, password } = req.body;
+
+        // login process (must have password and email)
+        if(!email || !password) {
+            return res.status(400).json({
+                message: 'Please provide email and password'
+            });
+        }
+        // check the user exist 
+        const user = await User.findOne({ email });
+
+        if(!user){
+            return res.status(401).json({
+                message: 'Invalid email or password'
+            })
+        }
+        
+        // compare if the password match 
+        const isValidPassword = await user.comparePassword(password);
+
+        if(!isValidPassword){
+            return res.status(401).json({
+                message: 'Invalid email or password'
+            })
+        }
+        // login successful
         res.status(200).json({
-            message: 'Login Endpoint working...'
+            message: 'User logged in successful',
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email
+            }
         })
 
     }catch(error){
