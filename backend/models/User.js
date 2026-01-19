@@ -26,37 +26,39 @@ const userSchema = new mongoose.Schema({
         // password format validate
         validate:{
             validator: function(password){
-                // check if validate password format is fit
-             if(this.isModified('password') && !password.startsWith('$2a$')){
+            //   check if the password already hashed
+            if(password.startsWith('$2a$')){
+                return true;
+            }
+            // check if validate password format is fit
                 const hasNumber = /\d/.test(password);
                 const hasSymbol =  /[!@#$%^&*(),.?":{}|<>]/.test(password);
                 const hasUppercase =  /[A-Z]/.test(password);
                 const hasLowercase = /[a-z]/.test(password);
 
                 return hasNumber && hasSymbol && hasUppercase && hasLowercase;
-             }
-             return true;
+          
 
             },
             message: 'Invalid password input!'
         }
-
-
-    },
-    createdAt:{
-        type: Date,
-        default: Date.now
     }
-});
+  
+},
+    {
+        timestamps: true 
+    }
+
+);
 
 
 userSchema.pre('save', async function(next){
     // check if we dont need encrypt cuz the password is not change
-    if(!this.isModified('password')) return next();
+    if(!this.isModified('password')) return;
     
-    // the password change 
+    // the password change - hash
     this.password = await bcrypt.hash(this.password, 10);
-    next();
+
 });
 // this is verify for check the content of login
 userSchema.methods.comparePassword = async function(candidatePassword){
