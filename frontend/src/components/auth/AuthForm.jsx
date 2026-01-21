@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState } from "react";
-import { validateEmail } from "../../utils/validation";
+import { validateEmail, validatePassword } from "../../utils/validation";
 
 
 // use props
@@ -29,6 +29,14 @@ const AuthForm = ({title, submitText, fields}) => {
                     ...errors,
                     email: error
                 });
+          }
+
+          if(name==='password'|| name==='confirmPassword'){
+            const error = validatePassword(value);
+            setErrors({
+                ...errors,
+                [name]:error
+            });
           }
     }
 
