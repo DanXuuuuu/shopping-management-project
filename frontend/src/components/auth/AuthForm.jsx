@@ -7,7 +7,7 @@ import { validateEmail, validatePassword } from "../../utils/validation";
 
 // use props
 
-const AuthForm = ({title, submitText, fields}) => {
+const AuthForm = ({title, submitText, fields, onSubmit}) => {
 
 // control components 
     const [ formData, setFormData ] = useState({});
@@ -44,10 +44,11 @@ const AuthForm = ({title, submitText, fields}) => {
     const handleSubmit = (e)=>{
         // prevent stop auto refresh 
         e.preventDefault();
-        console.log('Form data', formData); 
+        
 
-        // later verify data and send the data to the backend 
-        // deal with res 
+        if(onSubmit){
+            onSubmit(formData);
+        }
     }
     return (
         <div>
