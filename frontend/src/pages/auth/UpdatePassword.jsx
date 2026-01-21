@@ -1,5 +1,6 @@
 import React from "react";
 import AuthForm from "../../components/auth/AuthForm";
+
 // situations: 
 // 1.already logged and change password 
     // {name:'currentPassword', type:'password'},
@@ -11,6 +12,21 @@ import AuthForm from "../../components/auth/AuthForm";
 
 
 const UpdatePassword = ()=>{
+    const handleUpdatePassword = async(formdata)=>{
+        try{
+            // not sure if needs finish for the update password api
+            // const data = await UpdatePassword(formdata) ;
+            // console.log('Update password request:', formData);
+            alert('Password updating...');
+
+
+
+        }catch(error){
+
+            console.error('Update password error:', error);
+            alert('failed to update password')
+        }
+    }
     return (
         <AuthForm 
         title="Update Password"
@@ -18,6 +34,7 @@ const UpdatePassword = ()=>{
         fields={[
                 {name: 'email', type: 'email'}
         ]}
+        onSubmit={handleUpdatePassword}
         />
     )
 }

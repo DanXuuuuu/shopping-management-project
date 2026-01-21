@@ -16,7 +16,7 @@ export const signup = async(userData) =>{
     return data;
 };
 
-export const signin = async(userData)=>{
+export const login = async(userData)=>{
     const response = await fetch(`${BASE_URL_API}/auth/login`,{
         method:'POST',
         headers:{
