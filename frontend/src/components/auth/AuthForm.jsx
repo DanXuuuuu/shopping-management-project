@@ -149,7 +149,7 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                     }
                  }
                  >{ submitText }</Button>
-                    {/* for the bottom link */}
+                    {/* for the Sign In bottom link */}
                     {title === 'Sign In' && (
                         <Box sx={{ mt:2,
                             display:'flex',
@@ -187,7 +187,24 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
 
 
                         </Box>
+                        
                     )}
+                    {/* for the Sign In bottom link */}
+                {title === 'Sign Up' && (
+                    <Typography variant="body2"
+                        color="textSecondary"
+                        sx={{ textAlign: 'center', mt: 2 }}
+                        >
+                        Already have an account? <Link href='/signin'
+                        sx={{
+                            color:'#4A3FCA',
+                                        textAlign:'right',
+                                        '&:hover':{
+                                            textDecoration:'underline'}
+                        }}
+                        >Sign In</Link>
+                    </Typography>
+                )}
 
 
 
