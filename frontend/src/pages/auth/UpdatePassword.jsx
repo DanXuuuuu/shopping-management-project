@@ -14,7 +14,7 @@ import AuthForm from "../../components/auth/AuthForm";
 const UpdatePassword = ()=>{
     const handleUpdatePassword = async(formdata)=>{
         try{
-            // not sure if needs finish for the update password api
+
             // const data = await UpdatePassword(formdata) ;
             // console.log('Update password request:', formData);
             alert('Password updating...');

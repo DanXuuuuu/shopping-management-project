@@ -9,7 +9,7 @@ export const validateEmail = (email)=>{
         return 'Invalid Email Input';
     }
     // no error falsy
-    return null;
+    return '';
 }
 
 export const validatePassword = (password) =>{
@@ -27,7 +27,7 @@ export const validatePassword = (password) =>{
     if(!hasLowercase) return 'Password must contain at least one lowercase letter';
 
     const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    if(!hasSymbol) return 'Password must contain at least one sepcial character';
-    // if no error return null
-    return null;
+    if(!hasSymbol) return 'Password must contain at least one special character';
+    // if no error return ''
+    return '';
 };
