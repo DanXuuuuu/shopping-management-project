@@ -1,5 +1,4 @@
 import {
-    Drawer,
     Box,
     Stack,
     Typography,
@@ -51,7 +50,7 @@ import {
                    sx={{ py: 2 }}
                  >
                    <img
-                     src={product.image}
+                     src={product.imageUrl}
                      alt={product.name}
                      width={90}
                      height={90}

@@ -4,12 +4,11 @@ import {
     Typography,
     Button
   } from "@mui/material";
-  import { useDispatch, useSelector } from "react-redux";
+  import { useSelector } from "react-redux";
   import { mockProductsById } from "../../mock/mockProducts";
   
   export default function Summary(){
 
-    const dispatch = useDispatch();
     const items = useSelector((s) => s.cart.items); 
     const promo = useSelector((s) => s.cart.promo);
   

@@ -1,6 +1,31 @@
 import { createSlice,createAsyncThunk } from "@reduxjs/toolkit";
 
 
+export const validatePromoCode = createAsyncThunk(
+  "cart/validatePromoCode",
+  async(code,{ rejectWithValue }) =>{
+   
+    try{
+      const res = await fetch("/api/promos/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return rejectWithValue(data?.message || "Failed to validate promo");
+      }
+
+      return data;
+
+    }catch (err){
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
 
 const initialState = {
   isOpen:false,
@@ -8,8 +33,11 @@ const initialState = {
   items:{
     p1:1,
     p2:2,
+    p3:3,
   },
   promo: {
+    status: "idle",
+    error: null,
     code: "",
     discount: 0,
     message: "",
@@ -48,24 +76,44 @@ const cartSlice = createSlice({
           },
         setPromoInput: (state, action) => {
             state.promoInput = action.payload;
+        },
+        },
+        extraReducers: 
+          (builder) => {
+            builder
+              .addCase(validatePromoCode.pending, (state) => {
+                state.promo.status = "loading";
+                state.promo.error = null;
+              })
+              .addCase(validatePromoCode.fulfilled, (state, action) => {
+                state.promo = {
+                  ...state.promo,      // 保留了 input 
+                  ...action.payload,    // 后端回传 code, discount, message, isValid 
+                  status: "succeeded",
+                  error: null,
+                  message: action.payload.message || (action.payload.isValid ? "Applied!" : "Invalid"),
+                };
+              })
+              .addCase(validatePromoCode.rejected, (state, action) => {
+                state.promo = {
+                  ...initialState.promo, 
+                  input: state.promoInput, // 只保留input
+                  status: "failed",
+                  error: action.payload,
+                  message: action.payload,
+                };
+              });
           },
-        applyPromo:(state,action) => { //createAsyncThunk
-            const { code, discount, message, isValid } = action.payload;
-            state.promo = { code, discount, message, isValid };
-            state.promoInput = code;
-          }
-    }
-})
+        }
+)
 
 export const {
-    openCart,
-    closeCart,
-    increaseQty,
-    decreaseQty,
-    removeItem,
-    setPromoInput,
-    applyPromo
+  openCart,
+  closeCart,
+  increaseQty,
+  decreaseQty,
+  removeItem,
+  setPromoInput,
+} = cartSlice.actions;
 
-  } = cartSlice.actions;
-  
-  export default cartSlice.reducer;
+export default cartSlice.reducer;
