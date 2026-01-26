@@ -54,6 +54,14 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
             onSubmit(formData);
         }
     }
+// change the status to show/hide
+    const handleTogglePassword = (fieldName) =>{
+        setShowPassword({
+            ...showPassword,
+            [fieldName]: !showPassword[fieldName]
+        });
+    };
+
     // X button 
      const handleClose = () => {
         navigate('/');  
@@ -115,8 +123,12 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                 fullWidth
                 margin="normal"
                 label={field.name.charAt(0).toUpperCase()+ field.name.slice(1)}
-    
-                type={field.type}
+               // if it's password type & click the show button, changed to 'text'
+                type={(field.type === 'password' && showPassword[field.name])
+                    ?'text'
+                    : field.type
+
+                }
                 name={field.name}
 
                 // controller components 
@@ -126,7 +138,30 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                 error={!!errors[field.name]}
 
                 helperText={errors[field.name]}
-
+                // show /hide button 
+                  InputProps ={
+                    field.type === 'password' && {
+                        endAdornment: (
+                            <Button
+                            onClick={()=> handleTogglePassword(field.name)}
+                             sx={{
+                                                    minWidth: 'auto',
+                                                    textTransform: 'none',
+                                                    color: 'grey',
+                                                    fontWeight: 600,
+                                                    padding: '4px 4px',
+                                                    '&:hover': {
+                                                        backgroundColor: 'transparent',
+                                                        textDecoration: 'underline'
+                                                    }
+                                                }}
+                            
+                            >
+                                { showPassword[field.name] ? 'Hide' : 'Show'}
+                            </Button>
+                        )
+                    }
+                  }
                 />
                
                </div> 
@@ -150,7 +185,7 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                  }
                  >{ submitText }</Button>
                     {/* for the Sign In bottom link */}
-                    {title === 'Sign In' && (
+                    {title === 'Sign in to your account' && (
                         <Box sx={{ mt:2,
                             display:'flex',
                             justifyContent:'space-between',
@@ -170,7 +205,7 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                                         }
                                 }}
                                 >
-                                    Sign Up
+                                    Sign Up  
                                 </Link>
         </Typography>
 
@@ -190,7 +225,7 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                         
                     )}
                     {/* for the Sign In bottom link */}
-                {title === 'Sign Up' && (
+                {title === 'Sign up an account' && (
                     <Typography variant="body2"
                         color="textSecondary"
                         sx={{ textAlign: 'center', mt: 2 }}
@@ -205,11 +240,6 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                         >Sign In</Link>
                     </Typography>
                 )}
-
-
-
-
-
 
             </form>
            </Paper>

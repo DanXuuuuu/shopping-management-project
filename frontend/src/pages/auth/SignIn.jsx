@@ -35,7 +35,7 @@ const SignIn = () =>{
 
     return (
         <AuthForm 
-        title="Sign In"
+        title="Sign in to your account"
         submitText="Sign In"
         fields={[
             {name: 'email', type: 'email'},

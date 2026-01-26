@@ -29,7 +29,7 @@ const SignUp = () =>{
     }
     return (
        <AuthForm
-       title="Sign Up"
+       title="Sign up an account"
        submitText="Create account"
        fields={[
         {name:'username', type:'text'},
