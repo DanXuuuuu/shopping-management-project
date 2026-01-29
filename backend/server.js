@@ -8,10 +8,18 @@ dotenv.config();
 
 // create express app 
 const app = express();
+const promoRoutes = require('./routes/promoRoutes')
+const cartRoutes = require("./routes/cartRoutes");
 
-// middleware
+console.log("promoRoutes:", promoRoutes);
+console.log("cartRoutes:", cartRoutes);
+
 app.use(cors()); //allow frontend visit  
 app.use(express.json()); //analysis the json format request 
+
+app.use("/api/cart", cartRoutes);
+app.use('/api/promos', promoRoutes);
+
 
 // test route
 app.get('/',(req, res)=>{
