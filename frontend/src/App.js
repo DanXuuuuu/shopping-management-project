@@ -21,5 +21,5 @@ function App(){
       </Router>
   );
 }
-gai
+
 export default App;
