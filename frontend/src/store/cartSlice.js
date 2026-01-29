@@ -9,6 +9,7 @@ export const validatePromoCode = createAsyncThunk(
       const res = await fetch("/api/promos/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // headers: { Authorization: `Bearer ${token}` }
         body: JSON.stringify({ code }),
       });
 
@@ -26,6 +27,51 @@ export const validatePromoCode = createAsyncThunk(
   }
 );
 
+export const fetchCart = createAsyncThunk(
+  "cart/fetchCart",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch("/api/cart", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        // headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return rejectWithValue(data?.message || "Failed to fetch cart");
+      }
+
+      return data; 
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+)
+
+export const saveCart = createAsyncThunk(
+  "cart/saveCart",
+  async (items, { rejectWithValue }) => {
+    try {
+      const res = await fetch("/api/cart", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" }, // headers: { Authorization: `Bearer ${token}` }
+        body: JSON.stringify({ items }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        return rejectWithValue(data?.message || "Failed to save cart");
+      }
+
+      return data; 
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
 const initialState = {
   isOpen:false,
@@ -87,7 +133,7 @@ const cartSlice = createSlice({
               })
               .addCase(validatePromoCode.fulfilled, (state, action) => {
                 state.promo = {
-                  ...state.promo,      // 保留了 input 
+                  ...state.promo,      
                   ...action.payload,    // 后端回传 code, discount, message, isValid 
                   status: "succeeded",
                   error: null,
@@ -96,11 +142,11 @@ const cartSlice = createSlice({
               })
               .addCase(validatePromoCode.rejected, (state, action) => {
                 state.promo = {
-                  ...initialState.promo, 
-                  input: state.promoInput, // 只保留input
+                  ...state.promo,
                   status: "failed",
                   error: action.payload,
                   message: action.payload,
+                  isValid: false,
                 };
               });
           },
