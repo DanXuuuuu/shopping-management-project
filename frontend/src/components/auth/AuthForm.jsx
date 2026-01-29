@@ -69,11 +69,10 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
     return (
         <Box
         sx={{
-            minHeight:'100vh',
+            minHeight:'600px',
             display:'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor:'#f5f5f5',
             padding: 2 
 
         }}
