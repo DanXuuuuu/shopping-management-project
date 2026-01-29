@@ -1,18 +1,21 @@
 import React from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import { Link } from 'react-router-dom';
+import AddToCart from './AddToCart';
 
 const ProductCard = ({ product }) => {
   return (
     <Card 
       sx={{ 
         height: '100%', 
+        width: '100%',
         display: 'flex', 
         flexDirection: 'column',
         borderRadius: '8px', 
         boxShadow: '0 2px 10px rgba(0,0,0,0.05)', 
         border: '1px solid #eee',
         transition: '0.3s',
+        position: 'relative',
         '&:hover': { boxShadow: '0 5px 20px rgba(0,0,0,0.1)' } 
       }}
     >
@@ -20,9 +23,10 @@ const ProductCard = ({ product }) => {
       <Box sx={{ position: 'relative', p: 2, bgcolor: '#fff', display: 'flex', justifyContent: 'center' }}>
         <Box 
           sx={{ 
-            width: '200px',     
+            width: '100%',     
             height: '200px',    
-            display: 'flex',    
+            display: 'flex',  
+  
             justifyContent: 'center', 
             alignItems: 'center',    
             bgcolor: '#fff',   
@@ -78,7 +82,13 @@ const ProductCard = ({ product }) => {
         <Typography 
           variant="h6" 
           component="div" 
-          sx={{ fontWeight: 'bold', mb: 1, lineHeight: 1.2 }}
+          sx={{ fontWeight: 'bold', mb: 1, 
+            lineHeight: 1.2, 
+            display: '-webkit-box',
+            overflow: 'hidden',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            height: '2.4em' }}
         >
           {product.name}
         </Typography>
@@ -92,18 +102,9 @@ const ProductCard = ({ product }) => {
       {/* 3. button area */}
       <Box sx={{ p: 2, pt: 0, display: 'flex', gap: 1 }}>
         {/* Add Button */}
-        <Button 
-          variant="contained" 
-          fullWidth
-          disabled={product.countInStock === 0}
-          sx={{ 
-            bgcolor: '#5346bd', 
-            textTransform: 'none',
-            '&:hover': { bgcolor: '#403599' }
-          }}
-        >
-          Add
-        </Button>
+        <Box sx={{ flex: 1 }}> 
+            <AddToCart product={product} />
+        </Box>
 
         {/* Edit Button (Outlined) */}
         <Button 

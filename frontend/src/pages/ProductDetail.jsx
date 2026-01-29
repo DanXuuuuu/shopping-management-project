@@ -1,25 +1,47 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { useParams, Link } from 'react-router-dom';
 import { 
-  Container, Grid, Typography, Box, Button, Chip, Stack 
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+  Container, Grid, Typography, Box, Button, Chip, Stack, 
+  Alert } from '@mui/material';
+import { useEffect } from 'react';
+import { fetchProductDetail } from '../store/productSlice';
+import AddToCart from '../components/Product/AddToCart';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { products } = useSelector((state => state.products))
-  console.log("URL ID:", id, typeof id);
-  console.log("Redux Products:", products);
-  const product = products.find((p) => String(p._id) === String(id));
-  if (!product) {
+  //Get the dispatch function to trigger Redux actions
+  const dispatch = useDispatch();
+  //Select specific data from the Redux store:
+  //currentProduct: the details of the single product we are looking at
+  const { currentProduct, status, error } = useSelector((state) => state.products);
+
+  useEffect(() => {
+    if (id) {
+      // Trigger the action to fetch data from the backend
+      dispatch(fetchProductDetail(id));
+    }
+  }, [id, dispatch]);
+
+  const product = currentProduct;
+// Conditional Rendering: Loading State
+  if (status === 'loading') {
     return (
-        <Container sx={{ py: 10, textAlign: 'center' }}>
-            <Typography variant="h5">Product not found</Typography>
-            <Typography color="text.secondary">ID: {id}</Typography>
-        </Container>
+      <Container sx={{ py: 10, textAlign: 'center' }}>
+        <Typography variant="h5">Loading...</Typography>
+      </Container>
     );
   }
+
+
+  if (status === 'failed' || !product) {
+    return (
+      <Container sx={{ py: 10, textAlign: 'center' }}>
+        <Alert severity="error">{error || 'Product not found'}</Alert>
+      </Container>
+    );
+  }
+ 
 
 
 return (
@@ -93,25 +115,12 @@ return (
             <Typography variant="body1" sx={{ color: 'text.secondary', lineHeight: 1.8 }}>
               {product.description}
             </Typography>
-
-            <Box sx={{ pt: 2, display: 'flex', gap: 2 }}>
+            {/* Buttons Area */}
+            <Box sx={{ pt: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
                
-               {/* Add To Cart Button */}
-               <Button 
-                 variant="contained" 
-                 size="large"
-                 disabled={product.countInStock === 0}
-                 sx={{ 
-                   bgcolor: '#5346bd', 
-                   py: 1.5, 
-                   px: 4, 
-                   fontWeight: 'bold',
-                   textTransform: 'none',
-                   '&:hover': { bgcolor: '#403599' }
-                 }}
-               >
-                 Add To Cart
-               </Button>
+              <Box sx={{ width: '180px' }}>
+                  <AddToCart product={product} />
+               </Box>
 
                {/* Edit Button */}
                <Button 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   Grid, Container, Typography, Button, Box, 
@@ -6,26 +6,37 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/Product/ProductCard';
-import { sortProducts } from '../store/productSlice'; // import sort action from product slice
+import { sortProducts, fetchProducts } from '../store/productSlice'; // import sort action from product slice
+
 
 const ProductList = () => {
   const dispatch = useDispatch();
   const { products } = useSelector((state) => state.products);
+  const { status } = useSelector((state) => state.products);
   const [sort, setSort] = useState('last-added'); // default sort state
 
-  //pagination 
+  useEffect(() => {
+    if (status === 'idle'){
+      dispatch(fetchProducts());
+    }
+  }, [status, dispatch])
+
+  //pagination states
   const [page, setPage] = useState(1);
-  const itemsPerPage = 3;
-
+  const itemsPerPage = 8;
+ // Calculate total pages
   const count = Math.ceil(products.length / itemsPerPage);
-
+// Get current products for pagination
   const currentProducts = products.slice(
     (page - 1) * itemsPerPage, 
     page * itemsPerPage
   );
 
   const handlePageChange = (event, value) => {
+    // console.log("Current page:", value); 
+    // update page number
     setPage(value);
+    // scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth'});
   }
 
@@ -94,7 +105,7 @@ const ProductList = () => {
       <Grid container spacing={3} sx={{ justifyContent:{ xs: 'center', sm:'flex-start'}}}>
         {currentProducts.map((product) => (
           // xs=12 (mobile: 1 per row), sm=6 (ipad: 2 per row), md=4 (laptop: 3 per row), lg=3 (monitor: 4 per row)
-          <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex' }}>
             <ProductCard product={product} />
           </Grid>
         ))}
