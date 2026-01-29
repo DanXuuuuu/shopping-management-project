@@ -3,6 +3,7 @@ import { Stack, Button, Badge, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; 
 import { mockProductsById } from '../../../mock/mockProducts';
 import { openCart } from '../../../store/cartSlice';
 
@@ -10,6 +11,7 @@ const UserStatus = () => {
   
   const isLoggedIn = false; 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const items = useSelector((s) => s.cart.items);
   const productIds = Object.keys(items);
   const cartItemCount = Object.values(items).reduce((sum, qty) => sum + qty, 0);
@@ -23,6 +25,20 @@ const UserStatus = () => {
 
   const money = (n) => n.toFixed(2);
 
+  const handleCartClick = () => {
+    if (!isLoggedIn) {
+      alert("Please sign in to view your cart.");
+      navigate("/login");
+      return;
+    }
+    dispatch(openCart());
+  };
+
+  const handleSignOutClick = () => {
+    // TODO: later connect real auth logout
+    alert("Sign out is not wired yet.");
+  };
+
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
@@ -31,6 +47,7 @@ const UserStatus = () => {
           color="inherit" 
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={handleSignOutClick}
         >
           Sign Out
         </Button>
@@ -39,6 +56,7 @@ const UserStatus = () => {
           color="inherit" 
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={() => navigate("/login")}
         >
           Sign In
         </Button>
@@ -53,7 +71,7 @@ const UserStatus = () => {
           alignItems: 'center',
           gap: 1
         }}
-        onClick={() => dispatch(openCart())}
+        onClick={handleCartClick}
       >
         <Badge badgeContent={cartItemCount} color="error">
           <ShoppingCartOutlinedIcon />
