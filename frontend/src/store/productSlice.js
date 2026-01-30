@@ -6,8 +6,8 @@ import axios from 'axios';
 // 1. Fetch all products
 export const fetchProducts = createAsyncThunk(
     'products/fetchProducts', 
-    async () => {
-    const{ data } = await axios.get('/api/products');
+    async (keyword = '') => {
+    const{ data } = await axios.get(`/api/products?keyword=${keyword}`);
     return data;
 });
 // 2. Create a new product

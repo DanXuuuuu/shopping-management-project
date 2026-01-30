@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Paper, InputBase, IconButton } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { fetchProducts } from '../../../store/productSlice';
 const SearchBar = () => {
+  // --- state management ---
+  const [keyword, setKeyword] = useState('');
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // --- handle submit ---
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+    if (keyword.trim()){ //trim space
+      dispatch(fetchProducts(keyword));
+      navigate('/product');
+    } else {
+      dispatch(fetchProducts(''));
+      navigate('/product');
+    }
+  };
   return (
     <Paper
       component="form"
+      onSubmit={submitHandler}
       sx={{
         p: '2px 4px',
         display: 'flex',
@@ -19,8 +39,10 @@ const SearchBar = () => {
         sx={{ ml: 1, flex: 1 }}
         placeholder="Search"
         inputProps={{ 'aria-label': 'search products' }}
+        value={keyword}
+        onChange={(e) => setKeyword(e.target.value)}
       />
-      <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+      <IconButton type="submit" sx={{ p: '10px' }} aria-label="search">
         <SearchIcon />
       </IconButton>
     </Paper>

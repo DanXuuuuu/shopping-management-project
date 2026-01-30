@@ -3,56 +3,55 @@ import { Stack, Button, Badge, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+
 
 
 const UserStatus = () => {
-  
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // 模拟登录状态，Phase I 之后将由全局 Auth 状态控制
+  // --- 1. 获取用户状态 (目前是模拟，未来可以从 state.user 获取) ---
+  // 如果你已经做好了 User Auth，可以用下面这就话代替:
+  // const { userInfo } = useSelector((state) => state.user);
   const isLoggedIn = false; 
-  // 模拟购物车数量
-  const cartItemCount = 0;
-  // deal with the signin button 
+
+  // --- 2. 获取购物车数据 ---
+  // 我们使用你之前定义的 cartItems 数组
+  const { cartItems } = useSelector((state) => state.cart);
+
+  // --- 3. 计算数量和总价 ---
+  // 你的 cartItems 是数组 [{qty: 1, price: 99}, ...]，所以直接累加即可
+  const cartItemCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+  
+  const subtotal = cartItems.reduce((sum, item) => {
+    return sum + (item.price * item.qty);
+  }, 0);
+
+  // 金额格式化小助手
+  const money = (n) => n.toFixed(2);
+
+  // --- 4. 事件处理 ---
   const handleSignIn = () => {
     navigate('/signin');
   };
-  // deal with the signout button 
+
   const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.reload();
+    // 如果你有 logout 的 action，也可以在这里 dispatch
+    window.location.reload(); 
+  };
 
-  }
-
-    // deal with the cart button , but not test yet 
-  // const handleCartClick = () => {
-  //   navigate('/cart');
-  // };
-import { useDispatch, useSelector } from "react-redux";
-import { mockProductsById } from '../../../mock/mockProducts';
-import { openCart } from '../../../store/cartSlice';
-
-const UserStatus = () => {
-  
-  const isLoggedIn = false; 
-  const dispatch = useDispatch();
-  const items = useSelector((s) => s.cart.items);
-  const productIds = Object.keys(items);
-  const cartItemCount = Object.values(items).reduce((sum, qty) => sum + qty, 0);
-  
-  const subtotal = productIds.reduce((sum, productId) => {
-    const qty = items[productId];
-    const product = mockProductsById[productId];
-    if (!product) return sum;
-    return sum + product.price * qty;
-  }, 0);
-
-  const money = (n) => n.toFixed(2);
+  const handleCartClick = () => {
+    navigate('/cart');
+    // 如果你想用侧边栏抽屉模式，可以用队友写的: dispatch(openCart())
+  };
 
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
+      {/* 登录/登出 按钮 */}
       {isLoggedIn ? (
         <Button 
           color="inherit" 
@@ -73,6 +72,7 @@ const UserStatus = () => {
         </Button>
       )}
 
+      {/* 购物车按钮 */}
       <Button 
         color="inherit" 
         sx={{ 
@@ -82,13 +82,13 @@ const UserStatus = () => {
           alignItems: 'center',
           gap: 1
         }}
-        onClick={() => dispatch(openCart())}
+        onClick={handleCartClick}
       >
         <Badge badgeContent={cartItemCount} color="error">
           <ShoppingCartOutlinedIcon />
         </Badge>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        ${money(subtotal)}
+           ${money(subtotal)}
         </Typography>
       </Button>
 

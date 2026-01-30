@@ -2,16 +2,24 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
+const connectDB = require('./config/db');
+const errorHandler = require('./middleware/errorHandler');
 // read the env file 
 dotenv.config();
 
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/productRoutes');
+
 // create express app 
 const app = express();
+connectDB();
 
 // middleware
 app.use(cors()); //allow frontend visit  
 app.use(express.json()); //analysis the json format request 
+
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
 
 // test route
 app.get('/',(req, res)=>{
