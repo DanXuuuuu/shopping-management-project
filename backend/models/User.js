@@ -19,6 +19,15 @@ const userSchema = new mongoose.Schema({
         match:[/^\S+@\S+\.\S+$/, 'Invalid Email input!']
 
     },
+    role:{
+       type: String,
+       enum: ['user', 'admin'],
+       default: 'user' 
+    },
+    cart:{
+        type: Array,
+        default: []
+    },
     password:{
         type: String,
         required: true,

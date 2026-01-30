@@ -67,7 +67,9 @@ exports.signup = async(req, res, next)=>{
             user: {
                 id: newUser._id,
                 email: newUser.email,
-                username: newUser.username
+                username: newUser.username,
+                role: newUser.role,
+                cart: newUser.cart
             }
         })
     }catch(error){
@@ -113,7 +115,9 @@ exports.login = async(req, res, next)=>{
             user: {
                 id: user._id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role,
+                cart: user.cart
             }
         })
 
