@@ -5,11 +5,11 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; 
 import { mockProductsById } from '../../../mock/mockProducts';
-import { openCart } from '../../../store/cartSlice';
+import { openCart,fetchCart } from '../../../store/cartSlice';
 
 const UserStatus = () => {
   
-  const isLoggedIn = false; 
+  const isLoggedIn = true; 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const items = useSelector((s) => s.cart.items);
@@ -25,13 +25,21 @@ const UserStatus = () => {
 
   const money = (n) => n.toFixed(2);
 
-  const handleCartClick = () => {
+  const handleCartClick = async() => {
     if (!isLoggedIn) {
       alert("Please sign in to view your cart.");
       navigate("/login");
       return;
     }
     dispatch(openCart());
+
+    // const action = await dispatch(fetchCart());
+    
+    // if (fetchCart.fulfilled.match(action)) {
+    //   dispatch(openCart());
+    // } else {
+    //   alert(action.payload || "Failed to load cart");
+    // }
   };
 
   const handleSignOutClick = () => {
