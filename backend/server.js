@@ -2,26 +2,36 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const productRoutes = require('./routes/productRoutes')
+
 const connectDB = require('./config/db');
-// read the env file 
+const errorHandler = require('./middleware/errorHandler');
+const productRoutes = require('./routes/productRoutes');
+
+// here is read the env file 
 dotenv.config();
+// call the connectdb
 connectDB();
+
 // create express app 
 const app = express();
 
 // middleware
 app.use(cors()); //allow frontend visit  
 app.use(express.json()); //analysis the json format request 
+
+// router 
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', productRoutes);
 
 // test route
-app.get('/',(req, res)=>{
-    res.json({message:'backend running'});
+app.get('/', (req, res) => {
+  res.json({ message: 'backend running' });
 });
 
+// error middleware 
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

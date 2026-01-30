@@ -2,27 +2,55 @@ import React from 'react';
 import { Stack, Button, Badge, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import { useNavigate } from 'react-router-dom';
+import { useSelector , useDispatch  } from 'react-redux';
+import { logout } from '../../../store/slices/authSlice';
+
 
 const UserStatus = () => {
+  
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // read the login state from redux
+  const { isAuthenticated, user } = useSelector(state=> state.auth);
+
   // 模拟登录状态，Phase I 之后将由全局 Auth 状态控制
-  const isLoggedIn = false; 
+
   // 模拟购物车数量
   const cartItemCount = 0;
+  // deal with the signin button 
+  const handleSignIn = () => {
+    navigate('/signin');
+  };
+  // deal with the signout button 
+  const handleSignOut = () => {
+    dispatch(logout());
+    navigate('/signin')
+
+  }
+
+    // deal with the cart button , but not test yet 
+  // const handleCartClick = () => {
+  //   navigate('/cart');
+  // };
 
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
       {/* 登录/退出状态控制 */}
-      {isLoggedIn ? (
+      {isAuthenticated ? (
         <Button 
           color="inherit" 
+          onClick={handleSignOut}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
         >
-          Sign Out
+         { user?.username } Sign Out
         </Button>
       ) : (
         <Button 
           color="inherit" 
+          onClick={handleSignIn}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
         >
