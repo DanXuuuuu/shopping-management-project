@@ -10,12 +10,25 @@ import Summary from "./Summary";
 import Promo from "./Promo";
 import Header from "./Header";
 
-import { closeCart } from "../../store/cartSlice";
-
+import { closeCart,saveCart } from "../../store/cartSlice";
+import { useEffect } from "react";
 export default function Cart() {
   
   const dispatch = useDispatch();
   const isOpen = useSelector((s) => s.cart.isOpen);
+  const items = useSelector((s) => s.cart.items);
+  const dirty = useSelector((s) => s.cart.dirty);
+
+  useEffect(() => {
+
+    if (!dirty) return;
+
+    const timer = setTimeout(() => {
+      dispatch(saveCart(items));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  },[items, dirty,dispatch])
 
 
   return (
