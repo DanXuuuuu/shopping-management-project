@@ -1,5 +1,3 @@
-
-
 const mongoose = require('mongoose');
 
 const connectDB = async()=>{
@@ -13,6 +11,5 @@ const connectDB = async()=>{
         console.error('Mongodb connection error:', error);
     }
 };
-
 
 module.exports = connectDB;
