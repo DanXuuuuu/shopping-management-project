@@ -57,11 +57,12 @@ const UserStatus = () => {
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
           onClick={handleSignOutClick}
         >
-          Sign Out
+         { user?.username } Sign Out
         </Button>
       ) : (
         <Button 
           color="inherit" 
+          onClick={handleSignIn}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
           onClick={() => navigate("/login")}
