@@ -12,10 +12,12 @@ import {
    
     const dispatch = useDispatch();
 
-    const items = useSelector((s) => s.cart.items); 
+    const { cartItems = [] } = useSelector((state) => state.cart || {});
 
-    const cartCount = Object.values(items).reduce((sum, qty) => sum + qty, 0);
-
+    const cartCount = cartItems.reduce((sum, item) => {
+    return sum + (item.qty || 0);
+  }, 0);
+  
     return(
         <Box sx={{ bgcolor: "#4b47ff", color: "white", px: 2, py: 1.5 }}>
           <Stack

@@ -3,7 +3,7 @@ import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mu
 import { Link } from 'react-router-dom';
 import AddToCart from './AddToCart';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, isAdmin }) => {
   return (
     <Card 
       sx={{ 
@@ -107,7 +107,7 @@ const ProductCard = ({ product }) => {
         </Box>
 
         {/* Edit Button (Outlined) */}
-        <Button 
+      {isAdmin && (<Button 
           variant="outlined" 
           fullWidth
           component={Link}
@@ -120,7 +120,8 @@ const ProductCard = ({ product }) => {
           }}
         >
           Edit
-        </Button>
+        </Button> )}
+        
       </Box>
     </Card>
   );

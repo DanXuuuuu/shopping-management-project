@@ -5,7 +5,13 @@ const Product = require('../models/productModel')
 //@access  Public
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({}).sort({ createdAt: -1 })
+        const keyword = req.query.keyword ? {
+            name: {
+                $regex: req.query.keyword,
+                $options: 'i'
+            }
+        } : {};
+        const products = await Product.find({ ...keyword }).sort({ createdAt: -1 })
         res.json(products)
     } catch (error) {
         res.status(500).json({ message: error.message })

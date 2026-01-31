@@ -93,8 +93,8 @@ exports.login = async(req, res, next)=>{
         const user = await User.findOne({ email });
 
         if(!user){
-            const err = new Error('Invalid email or password');
-            err.statusCode = 401;
+            const err = new Error('User not found, please sign up');
+            err.statusCode = 404;
             return next(err);
         }
         

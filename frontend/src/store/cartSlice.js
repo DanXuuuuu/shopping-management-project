@@ -1,31 +1,32 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { logout } from "./authSlice";
 
 const GUEST_CART_KEY = "guest_cart";
+const BASE_URL_API = 'http://localhost:8080/api'; 
+// --- Helper: Local Storage ---
 
 const loadGuestCart = () => {
   try {
-    const raw = localStorage.getItem(GUEST_CART_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    return parsed.items || {};
+    const parsed = JSON.parse(localStorage.getItem(GUEST_CART_KEY));
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return {};
+ 
+    return [];
   }
 };
 
-const saveGuestCart = (items) => {
-  localStorage.setItem(
-    GUEST_CART_KEY,
-    JSON.stringify({ items })
-  );
+
+const saveGuestCart = (cartItems) => {
+  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cartItems));
 };
+
 
 const clearGuestCart = () => {
   localStorage.removeItem(GUEST_CART_KEY);
 };
 
+// --- Async Thunks  ---
 
-const BASE_URL_API = 'http://localhost:8080/api';
 /**
  * Promo validate
  * POST /api/promos/validate  body: { code }
@@ -33,7 +34,6 @@ const BASE_URL_API = 'http://localhost:8080/api';
 export const validatePromoCode = createAsyncThunk(
   "cart/validatePromoCode",
   async (code, { rejectWithValue }) => {
-
     try {
       const res = await fetch(`${BASE_URL_API}/promos/validate`, {
         method: "POST",
@@ -41,15 +41,9 @@ export const validatePromoCode = createAsyncThunk(
         // headers: { Authorization: `Bearer ${token}` }
         body: JSON.stringify({ code }),
       });
-
       const data = await res.json();
-
-      if (!res.ok) {
-        return rejectWithValue(data?.message || "Failed to validate promo");
-      }
-
-      return data; // { code, discount, isValid, message }
-
+      if (!res.ok) return rejectWithValue(data?.message || "Failed to validate promo");
+      return data;// { code, discount, isValid, message }
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -62,41 +56,59 @@ export const validatePromoCode = createAsyncThunk(
  */
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue, getState }) => {
     try {
+      const { auth } = getState();
+      if (!auth || !auth.token) return []; 
+
       const res = await fetch(`${BASE_URL_API}/cart`, {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
-        // headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${auth.token}`
+        },
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        return rejectWithValue(data?.message || "Failed to fetch cart");
-      }
-
-      return data; // { items }
+      if (!res.ok) return rejectWithValue(data?.message);
+      /*
+      if (Array.isArray(data)) return data;
+      if (data.items && Array.isArray(data.items)) return data.items;
+      if (data.cartItems && Array.isArray(data.cartItems)) return data.cartItems;
+      */
+      // 如果以上都不是，说明数据坏了，返回空数组保命
+      return [];
 
     } catch (err) {
       return rejectWithValue(err.message);
     }
   }
-)
+);
 
 /**
  * Save cart
  * PUT /api/cart  body: { items }
  */
-
 export const saveCart = createAsyncThunk(
   "cart/saveCart",
-  async (items, { rejectWithValue }) => {
+  async (arg, { rejectWithValue, getState }) => {
     try {
+      const items = Array.isArray(arg) ? arg : arg.items;
+      const token = arg.token || getState().auth.token;
+
+      if (!token) return items; 
+      const payload = items.map(item => ({
+        product: item.product._id || item.product, 
+        qty: item.qty
+      }));
+
       const res = await fetch(`${BASE_URL_API}/cart`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" }, // headers: { Authorization: `Bearer ${token}` }
-        body: JSON.stringify({ items }),
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` 
+        }, 
+        body: JSON.stringify({ items: payload }),
       });
 
       const data = await res.json();
@@ -105,22 +117,22 @@ export const saveCart = createAsyncThunk(
         return rejectWithValue(data?.message || "Failed to save cart");
       }
 
-      return data; // { items }
+      return data.items || []; 
     } catch (err) {
       return rejectWithValue(err.message);
     }
   }
 );
 
+// --- Initial State ---
+
 const initialState = {
   isOpen: false,
   dirty: false,
   promoInput: "",
-  items: {   // loadGuestCart(),
-    p1: 1,
-    p2: 2,
-    p3: 3,
-  },
+  
+  cartItems: loadGuestCart(), 
+  
   promo: {
     status: "idle",
     error: null,
@@ -141,147 +153,146 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    openCart: (state) => {
-      state.isOpen = true;
+    openCart: (state) => { 
+      state.isOpen = true; 
     },
-    closeCart: (state) => {
-      state.isOpen = false;
+    closeCart: (state) => { 
+      state.isOpen = false; 
     },
-    //  Add item from product page button logic
-    // const handleAdd = () => {
-    //   dispatch(
-    //     addToCart({
-    //       productId: product._id,
-    //       maxQty: product.countInStock,
-    //     })
-    //   );
-    // };
-    addToCart:(state, action) => {
-      const { productId, maxQty } = action.payload;
-
-      const currentQty = state.items[productId] || 0;
-
-      if (currentQty >= maxQty) return;
     
-      state.items[productId] = currentQty + 1;
-    
-      state.promo = null; 
-      state.dirty = true;
+    //  AddToCart
+    addToCart: (state, action) => {
+      const product = action.payload;  //
+      if (!Array.isArray(state.cartItems)) { //Array of Objects
+         state.cartItems = [];
+      }
+
+      const existingItem = state.cartItems.find((item) => item.product._id === product._id);
+
+      if (existingItem) {
+        if (existingItem.qty < product.countInStock) {
+           existingItem.qty += 1;
+        }
+      } else {
+   
+        state.cartItems.push({
+          product: product, 
+          qty: 1
+        });
+      }
       
-      saveGuestCart(state.items);
-    },
-    increaseQty: (state, action) => {
-      const { productId, maxQty } = action.payload;
-
-      if (!state.items[productId]) return;
-      if (state.items[productId] >= maxQty) return;
-
-      state.items[productId] += 1;
-      state.promo = null;
+      state.promo = initialState.promo; 
       state.dirty = true;
-
-      saveGuestCart(state.items);
+      saveGuestCart(state.cartItems);   
     },
+    
+    increaseQty: (state, action) => { 
+      const { productId, maxQty } = action.payload;
+      const item = state.cartItems.find((x) => x.product._id === productId);
+
+      if (item && item.qty < maxQty) {
+        item.qty += 1;
+        state.promo = initialState.promo;
+        state.dirty = true;
+        saveGuestCart(state.cartItems);
+      }
+    },
+
     decreaseQty: (state, action) => {
       const { productId } = action.payload;
-      const currentQty = state.items[productId];
+      const item = state.cartItems.find((x) => x.product._id === productId);
 
-      if (!currentQty) return;
-      if (currentQty === 1) {
-        delete state.items[productId];
-      } else {
-        state.items[productId] = currentQty - 1;
+      if (item) {
+        if (item.qty === 1) {
+          // 过滤移除
+          state.cartItems = state.cartItems.filter(x => x.product._id !== productId);
+        } else {
+          item.qty -= 1;
+        }
+        state.dirty = true;
+        saveGuestCart(state.cartItems);
       }
-      state.dirty = true;
-
-      saveGuestCart(state.items);
     },
+
     removeItem: (state, action) => {
       const { productId } = action.payload;
-      delete state.items[productId];
+      state.cartItems = state.cartItems.filter(x => x.product._id !== productId);
       state.dirty = true;
-      state.promo = null;
-
-      saveGuestCart(state.items);
+      state.promo = initialState.promo;
+      saveGuestCart(state.cartItems);
     },
+
     setPromoInput: (state, action) => {
       state.promoInput = action.payload;
     },
+    
     setCart: (state, action) => {
-      state.items = action.payload || {};
+      state.cartItems = action.payload || [];
       state.dirty = false;
     },
+    
+    
+    clearCart: (state) => {
+        state.cartItems = [];
+        clearGuestCart();
+    }
   },
-  extraReducers:
-    (builder) => {
+  
+  extraReducers: (builder) => {
       builder
-      //Promo validate
-        .addCase(validatePromoCode.pending, (state) => {
-          state.promo.status = "loading";
-          state.promo.error = null;
-        })
+        // Promo validate
         .addCase(validatePromoCode.fulfilled, (state, action) => {
           state.promo = {
             ...state.promo,
-            ...action.payload,    // 后端回传 code, discount, message, isValid 
+            ...action.payload,    
             status: "succeeded",
             error: null,
             message: action.payload.message || (action.payload.isValid ? "Applied!" : "Invalid"),
           };
         })
-        .addCase(validatePromoCode.rejected, (state, action) => {
-          state.promo = {
-            ...state.promo,
-            status: "failed",
-            error: action.payload,
-            message: action.payload,
-            isValid: false,
-          };
-        })
-      
-        //fetch cart
-        .addCase(fetchCart.pending, (state) => {
-          state.cartSync.fetchStatus = "loading";
-          state.cartSync.fetchError = null;
-        })
+        
+        // Fetch Cart
         .addCase(fetchCart.fulfilled, (state, action) => {
           state.cartSync.fetchStatus = "succeeded";
-          state.cartSync.fetchError = null;
-
-          const items = action.payload?.items || {};
-          state.items = items;
+          state.cartItems = action.payload || [];
           state.dirty = false;
+          clearGuestCart();
+        })
+        
+        // Save Cart
+        .addCase(saveCart.fulfilled, (state) => {
+          state.cartSync.saveStatus = "succeeded";
+          state.dirty = false;
+        })
+
+        //logout clear cart action
+        .addCase(logout, (state) => {
+            console.log("Logout detected: Clearing cart...");
+            state.cartItems = [];
+            
+            state.promo = {
+                status: "idle",
+                error: null,
+                code: "",
+                discount: 0,
+                message: "",
+                isValid: false,
+            };
+            state.cartSync = {
+                fetchStatus: "idle",
+                fetchError: null,
+                saveStatus: "idle",
+                saveError: null,
+            };
+            state.isOpen = false;
+            state.dirty = false;
+            state.promoInput = "";
 
             clearGuestCart();
-        })
-        .addCase(fetchCart.rejected, (state, action) => {
-          state.cartSync.fetchStatus = "failed";
-          state.cartSync.fetchError = action.payload || "Failed to fetch cart";
-        })
-
-         //save cart
-        .addCase(saveCart.pending, (state) => {
-          state.cartSync.saveStatus = "loading";
-          state.cartSync.saveError = null;
-        })
-        .addCase(saveCart.fulfilled, (state, action) => {
-          state.cartSync.saveStatus = "succeeded";
-          state.cartSync.saveError = null;
-
-          const items = action.payload?.items;
-          if (items) state.items = items;
-
-          state.dirty = false;
-        })
-        .addCase(saveCart.rejected, (state, action) => {
-          state.cartSync.saveStatus = "failed";
-          state.cartSync.saveError = action.payload || "Failed to save cart";
         });
-    },
 
-},
-        
-)
+    },
+});
 
 export const {
   openCart,
@@ -291,7 +302,8 @@ export const {
   decreaseQty,
   removeItem,
   setPromoInput,
-  setCart
+  setCart,
+  clearCart
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

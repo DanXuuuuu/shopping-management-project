@@ -15,6 +15,9 @@ const ProductList = () => {
   const { status } = useSelector((state) => state.products);
   const [sort, setSort] = useState('last-added'); // default sort state
 
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isAdmin = isAuthenticated && user && user.role === 'admin';
+
   useEffect(() => {
     if (status === 'idle'){
       dispatch(fetchProducts());
@@ -84,7 +87,7 @@ const ProductList = () => {
           </FormControl>
 
           {/* Add Product button */}
-          <Button 
+          {isAdmin && (<Button 
             variant="contained" 
             size="large"
             component={Link}
@@ -97,7 +100,8 @@ const ProductList = () => {
             }}
           >
             Add Product
-          </Button>
+          </Button>  )}
+          
         </Box>
       </Box>
 
@@ -106,7 +110,7 @@ const ProductList = () => {
         {currentProducts.map((product) => (
           // xs=12 (mobile: 1 per row), sm=6 (ipad: 2 per row), md=4 (laptop: 3 per row), lg=3 (monitor: 4 per row)
           <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex' }}>
-            <ProductCard product={product} />
+            <ProductCard product={product} isAdmin={isAdmin} />
           </Grid>
         ))}
       </Grid>

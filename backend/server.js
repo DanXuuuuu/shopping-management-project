@@ -1,20 +1,27 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-
+// import package we need 
+const express = require('express');
+const cors = require('cors');
+const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
-const productRoutes = require('./routes/productRoutes');
+
 
 // here is read the env file 
 dotenv.config();
-// call the connectdb
+
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/productRoutes');
+
+// create express app 
+const app = express();
 connectDB();
 
-const app = express();
+// middleware
+app.use(cors()); //allow frontend visit  
+app.use(express.json()); //analysis the json format request 
 
-app.use(cors());
-app.use(express.json());
+app.use('/api/auth', authRoutes);
+
 
 const promoRoutes = require("./routes/promoRoutes");
 const cartRoutes = require("./routes/cartRoutes");

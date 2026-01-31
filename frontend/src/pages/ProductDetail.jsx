@@ -15,6 +15,8 @@ const ProductDetail = () => {
   //Select specific data from the Redux store:
   //currentProduct: the details of the single product we are looking at
   const { currentProduct, status, error } = useSelector((state) => state.products);
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const isAdmin = isAuthenticated && user && user.role === 'admin';
 
   useEffect(() => {
     if (id) {
@@ -123,7 +125,7 @@ return (
                </Box>
 
                {/* Edit Button */}
-               <Button 
+              {isAdmin && (<Button 
                  variant="outlined" 
                  size="large"
                  component={Link}       
@@ -142,7 +144,8 @@ return (
                  }}
                >
                  Edit
-               </Button>
+               </Button>)}
+               
 
             </Box>
 

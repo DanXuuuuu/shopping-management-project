@@ -4,81 +4,76 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom"; 
-import { mockProductsById } from '../../../mock/mockProducts';
-import { openCart,fetchCart } from '../../../store/cartSlice';
+import { openCart } from '../../../store/cartSlice';
+import { logout } from '../../../store/authSlice'; 
 
 const UserStatus = () => {
-  
-  const isLoggedIn = true; 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const items = useSelector((s) => s.cart.items);
-  const productIds = Object.keys(items);
-  const cartItemCount = Object.values(items).reduce((sum, qty) => sum + qty, 0);
+
+  // 1. 获取 Auth 状态
+  const { user, isAuthenticated } = useSelector((state) => state.auth || {});
+
+  // 2. ✨ 核心修改点：适配最新的 cartSlice
+  // 最新的 slice 里状态叫 cartItems，所以这里要解构 cartItems
+  const { cartItems } = useSelector((state) => state.cart || {});
   
-  const subtotal = productIds.reduce((sum, productId) => {
-    const qty = items[productId];
-    const product = mockProductsById[productId];
-    if (!product) return sum;
-    return sum + product.price * qty;
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
+
+  // 3. 计算逻辑 (使用 safeCartItems)
+  const cartItemCount = safeCartItems.reduce((sum, item) => sum + (item.qty || 0), 0);
+
+  const subtotal = safeCartItems.reduce((sum, item) => {
+    // 兼容处理：确保能找到 price (item.product.price)
+    const price = item.product?.price || item.price || 0; 
+    return sum + (price * (item.qty || 0));
   }, 0);
 
   const money = (n) => n.toFixed(2);
 
-  const handleCartClick = async() => {
-    if (!isLoggedIn) {
-      alert("Please sign in to view your cart.");
-      navigate("/login");
-      return;
-    }
-    dispatch(openCart());
+  // --- 事件处理 ---
 
-    // const action = await dispatch(fetchCart());
-    
-    // if (fetchCart.fulfilled.match(action)) {
-    //   dispatch(openCart());
-    // } else {
-    //   alert(action.payload || "Failed to load cart");
-    // }
+  const handleCartClick = () => {
+    dispatch(openCart());
+  };
+
+  const handleSignInClick = () => {
+    navigate("/signin");
   };
 
   const handleSignOutClick = () => {
-    // TODO: later connect real auth logout
-    alert("Sign out is not wired yet.");
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
-      {isLoggedIn ? (
+      {isAuthenticated && user ? (
         <Button 
           color="inherit" 
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
           onClick={handleSignOutClick}
         >
-         { user?.username } Sign Out
+         Hi, { user.username || 'User' } (Sign Out)
         </Button>
       ) : (
         <Button 
           color="inherit" 
-          onClick={handleSignIn}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
-          onClick={() => navigate("/login")}
+          onClick={handleSignInClick}
         >
           Sign In
         </Button>
       )}
 
+      {/* 购物车按钮 */}
       <Button 
         color="inherit" 
         sx={{ 
-          textTransform: 'none', 
-          fontWeight: 600,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
+          textTransform: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1
         }}
         onClick={handleCartClick}
       >
@@ -86,7 +81,7 @@ const UserStatus = () => {
           <ShoppingCartOutlinedIcon />
         </Badge>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        ${money(subtotal)}
+           ${money(subtotal)}
         </Typography>
       </Button>
 
