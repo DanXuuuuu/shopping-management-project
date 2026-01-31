@@ -2,48 +2,60 @@ import React from 'react';
 import { Stack, Button, Badge, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { useNavigate } from 'react-router-dom';
-import { useSelector , useDispatch  } from 'react-redux';
-import { logout } from '../../../store/slices/authSlice';
-
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; 
+import { mockProductsById } from '../../../mock/mockProducts';
+import { openCart,fetchCart } from '../../../store/cartSlice';
 
 const UserStatus = () => {
   
-  const navigate = useNavigate();
+  const isLoggedIn = true; 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const items = useSelector((s) => s.cart.items);
+  const productIds = Object.keys(items);
+  const cartItemCount = Object.values(items).reduce((sum, qty) => sum + qty, 0);
+  
+  const subtotal = productIds.reduce((sum, productId) => {
+    const qty = items[productId];
+    const product = mockProductsById[productId];
+    if (!product) return sum;
+    return sum + product.price * qty;
+  }, 0);
 
-  // read the login state from redux
-  const { isAuthenticated, user } = useSelector(state=> state.auth);
+  const money = (n) => n.toFixed(2);
 
-  // 模拟登录状态，Phase I 之后将由全局 Auth 状态控制
+  const handleCartClick = async() => {
+    if (!isLoggedIn) {
+      alert("Please sign in to view your cart.");
+      navigate("/login");
+      return;
+    }
+    dispatch(openCart());
 
-  // 模拟购物车数量
-  const cartItemCount = 0;
-  // deal with the signin button 
-  const handleSignIn = () => {
-    navigate('/signin');
+    // const action = await dispatch(fetchCart());
+    
+    // if (fetchCart.fulfilled.match(action)) {
+    //   dispatch(openCart());
+    // } else {
+    //   alert(action.payload || "Failed to load cart");
+    // }
   };
-  // deal with the signout button 
-  const handleSignOut = () => {
-    dispatch(logout());
-    navigate('/signin')
 
-  }
-
-    // deal with the cart button , but not test yet 
-  // const handleCartClick = () => {
-  //   navigate('/cart');
-  // };
+  const handleSignOutClick = () => {
+    // TODO: later connect real auth logout
+    alert("Sign out is not wired yet.");
+  };
 
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
-      {/* 登录/退出状态控制 */}
-      {isAuthenticated ? (
+      {isLoggedIn ? (
         <Button 
           color="inherit" 
-          onClick={handleSignOut}
+          startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={handleSignOutClick}
         >
          { user?.username } Sign Out
         </Button>
@@ -53,12 +65,12 @@ const UserStatus = () => {
           onClick={handleSignIn}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={() => navigate("/login")}
         >
           Sign In
         </Button>
       )}
 
-      {/* 购物车状态 - 包含图标、数量角标和金额 */}
       <Button 
         color="inherit" 
         sx={{ 
@@ -68,12 +80,13 @@ const UserStatus = () => {
           alignItems: 'center',
           gap: 1
         }}
+        onClick={handleCartClick}
       >
         <Badge badgeContent={cartItemCount} color="error">
           <ShoppingCartOutlinedIcon />
         </Badge>
         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-          $0.00
+        ${money(subtotal)}
         </Typography>
       </Button>
 

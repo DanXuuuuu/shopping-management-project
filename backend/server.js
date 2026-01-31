@@ -1,7 +1,6 @@
-// import package we need 
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
 
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
@@ -12,13 +11,20 @@ dotenv.config();
 // call the connectdb
 connectDB();
 
-// create express app 
 const app = express();
 
-// middleware
-app.use(cors()); //allow frontend visit  
-app.use(express.json()); //analysis the json format request 
+app.use(cors());
+app.use(express.json());
 
+const promoRoutes = require("./routes/promoRoutes");
+const cartRoutes = require("./routes/cartRoutes");
+
+app.use("/api/cart", cartRoutes);
+app.use("/api/promos", promoRoutes);
+
+app.get("/", (req, res) => {
+  res.json({ message: "backend running" });
+});
 // router 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', productRoutes);
