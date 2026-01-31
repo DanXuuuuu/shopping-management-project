@@ -24,10 +24,22 @@ const userSchema = new mongoose.Schema({
        enum: ['user', 'admin'],
        default: 'user' 
     },
-    cart:{
-        type: Array,
-        default: []
-    },
+    cart: [{
+        product: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Product', 
+                required: true
+            },
+            name: String, 
+            image: String, 
+            price: Number, 
+            qty: {
+                type: Number,
+                default: 1,
+                min: 1
+            }
+    }
+    ],
     password:{
         type: String,
         required: true,

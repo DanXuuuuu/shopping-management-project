@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useSelector  } from "react-redux";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import UpdatePassword from "./pages/auth/UpdatePassword";
@@ -7,12 +7,23 @@ import Layout from './components/Layout/Layout';
 import ProductList from './pages/ProductList';
 import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
-import { useDispatch  } from "react-redux";
-import { loginSuccess } from "./store/slices/authSlice";
 
+// --- ✨ 新增：路由守卫组件 ✨ ---
+// 作用：如果不是管理员，强行踢回首页 (Req D & E 的双重保险)
+const AdminRoute = ({ children }) => {
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
 
+  // 1. 必须登录
+  // 2. 角色必须是 admin
+  if (!isAuthenticated || !user || user.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 
 function App(){
+/*
   // send action to Redux 
   const dispatch = useDispatch();
   // reloading the login state from localStorage 
@@ -37,23 +48,42 @@ function App(){
 
       }
     }
-  }, [dispatch]);
+  }, [dispatch]);*/
+
   return (
  
       <Router>
         <Layout>
         <Routes>
-          {/* <Route path="/" element={<Home />} /> */}
+          {/* 公开路由：所有人都能看 */}
           <Route path="/" element={<ProductList />} />
-          <Route path="/" element={<div>Welcome to E-Commerce platform</div>} />
+          <Route path="/product" element={<ProductList />} />
+          <Route path="/product/:id" element={<ProductDetail />} />
+          {/* 认证路由 */}
           <Route path="/signin" element={<SignIn/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/update-password" element={<UpdatePassword/>}/>
 
-          <Route path="/product" element={<ProductList />} />
-          <Route path="/product/new" element={<CreateProduct />} />
-          <Route path="/product/edit/:id" element={<CreateProduct />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
+
+          {/* 保护路由：只有 Admin 能进  */}
+          {/* 如果普通用户在地址栏硬输 /product/new，会被 AdminRoute 拦截 */}
+          <Route 
+            path="/product/new" 
+            element={
+              <AdminRoute>
+                <CreateProduct />
+              </AdminRoute>
+            } 
+          />
+          <Route 
+            path="/product/edit/:id" 
+            element={
+              <AdminRoute>
+                <CreateProduct />
+              </AdminRoute>
+            } 
+          />
+          
         </Routes>
         </Layout>
       </Router>

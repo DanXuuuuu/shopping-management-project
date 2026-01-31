@@ -1,9 +1,66 @@
 import React from "react";
 import AuthForm from "../../components/auth/AuthForm";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+// 👇 修改点 1: 引入 Redux 的 register action
+// 注意：我在 authSlice 里给它起名叫 register，如果你那边叫 signup 请自行调整
+import { register } from "../../store/authSlice"; 
+
+const SignUp = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const handleSignUp = async (formData) => {
+        // 👇 修改点 2: 前端简单校验 (Validation A)
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        try {
+            // 👇 修改点 3: 触发 Redux action
+            await dispatch(register(formData)).unwrap();
+            
+            console.log('Signup success');
+            alert('Registration successful!');
+            
+            // 不需要手动 localStorage，slice 已经存了
+            navigate('/'); 
+
+        } catch (error) {
+            console.error('Signup error:', error);
+
+            const errorMsg = 
+            error.message ||                 // Redux Toolkit 序列化后的错误信息
+            error.response?.data?.message || // 常见的 Express 错误格式
+            error.response?.data?.error ||   // 你的 errorHandler 格式
+            "Unknown error occurred";
+            
+            alert(`Registration failed: ${errorMsg}`);
+        }
+    }
+
+    return (
+       <AuthForm
+           title="Create an account"
+           submitText="Sign Up"
+           fields={[
+            {name:'email', type: 'email', label: 'Email Address'},
+            {name:'password', type:'password', label: 'Password'},
+           ]} 
+           onSubmit={handleSignUp}
+       />
+    );
+}
+
+export default SignUp;
+/*
+import React from "react";
+import AuthForm from "../../components/auth/AuthForm";
 import { signup } from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../../store/slices/authSlice";
+import { loginSuccess } from "../../store/authSlice";
 
 
 const SignUp = () =>{
@@ -54,4 +111,4 @@ const SignUp = () =>{
     );
 }
 
-export default SignUp;
+export default SignUp;*/

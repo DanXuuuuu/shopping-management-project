@@ -11,7 +11,7 @@ const Footer = () => {
         bgcolor: '#111827', 
         color: 'white', 
         py: 4, 
-        mt: 'auto' // 确保 Footer 始终在页面最底部
+        mt: 'auto' 
       }}
     >
       <Container maxWidth="xl">

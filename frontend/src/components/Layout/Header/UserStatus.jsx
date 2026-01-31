@@ -4,7 +4,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useSelector , useDispatch  } from 'react-redux';
-import { logout } from '../../../store/slices/authSlice';
+import { logout } from '../../../store/authSlice';
 
 
 const UserStatus = () => {
@@ -14,7 +14,7 @@ const UserStatus = () => {
   // --- 1. 获取用户状态 (目前是模拟，未来可以从 state.user 获取) ---
   // 如果你已经做好了 User Auth，可以用下面这就话代替:
   // const { userInfo } = useSelector((state) => state.user);
-  const isLoggedIn = false; 
+  //const { isAuthenticated, user } = useSelector(state => state.auth);
 
   // --- 2. 获取购物车数据 ---
   // 我们使用你之前定义的 cartItems 数组
@@ -45,7 +45,8 @@ const UserStatus = () => {
 
   const handleSignOut = () => {
     dispatch(logout());
-    navigate('/signin')
+    navigate('/signin');
+  };
 
   const handleCartClick = () => {
     navigate('/cart');
@@ -99,6 +100,6 @@ const UserStatus = () => {
     </Stack>
   );
 };
-}
+
 
 export default UserStatus;
