@@ -13,18 +13,44 @@ export const fetchProducts = createAsyncThunk(
 // 2. Create a new product
 export const createProduct = createAsyncThunk(
   'products/createProduct',
-  async (newProductData) => {
-    const{ data } = await axios.post('/api/products', newProductData);
-    return data; 
+  async (newProductData, { rejectWithValue, getState }) => {
+    try{
+      const { auth } = getState();
+      const token = auth && auth.token;
+
+      const config = {
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const{ data } = await axios.post('/api/products', newProductData, config);
+      return data; 
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
   }
 );
 // 3. Update an existing product
 export const updateProduct = createAsyncThunk(
   'products/updateProduct',
-  async (updatedProductData) => {
-    const { _id, ...updatedFields } = updatedProductData;
-    const { data } = await axios.put(`/api/products/${_id}`, updatedFields);
-    return data;
+  async (updatedProductData, { rejectWithValue, getState }) => {
+    try{
+      const { auth } = getState();
+      const token = auth && auth.token;
+
+      const config = {
+        headers:{
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { _id, ...updatedFields } = updatedProductData;
+      const { data } = await axios.put(`/api/products/${_id}`, updatedFields, config);
+      return data;
+
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+    
   }
 );
 
@@ -39,9 +65,23 @@ export const fetchProductDetail = createAsyncThunk(
 // 5. Delete a product
 export const deleteProduct = createAsyncThunk(
   'products/deleteProduct',
-  async (id) => {
-    await axios.delete(`/api/products/${id}`);
-    return id; 
+  async (id, { rejectWithValue, getState }) => {
+    try {
+      const { auth } = getState();
+      const token = auth && auth.token;
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      await axios.delete(`/api/products/${id}`, config);
+      return id; 
+
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+    
   }
 );
 

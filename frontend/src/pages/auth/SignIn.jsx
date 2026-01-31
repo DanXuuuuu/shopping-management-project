@@ -1,14 +1,14 @@
 import React from "react";
 import AuthForm from "../../components/auth/AuthForm";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../store/authSlice"; 
-import { fetchCart } from "../../store/cartSlice";
+import { fetchCart, saveCart } from "../../store/cartSlice";
 
 const SignIn = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-
+    const { cartItems } = useSelector((state) => state.cart);
     const handleSignIn = async (formData) => {
         try {
             //  触发 Redux action 并等待结果
@@ -17,12 +17,20 @@ const SignIn = () => {
             
             console.log('Login success:', userData);
             
-            // 登录成功后，立刻去后端拉取购物车！
-            // 这一步会将数据库里的 cart 填充到 Redux 的 cartItems
+            if (cartItems && cartItems.length > 0) {
+                // 情况 A: 如果游客购物车里有东西
+                // 必须先把这些东西“上传/合并”到后端数据库
+                console.log("Syncing guest cart to server...");
+                await dispatch(saveCart({ 
+                    items: cartItems,       // 购物车商品
+                    token: userData.token   // 刚刚拿到的最新 Token
+                })).unwrap();
+            }
+                
+                // 上传完后，再去拉取一次确定的最新数据（可选，但更稳妥）
             await dispatch(fetchCart());
+
             alert(`Login successful! Welcome ${userData.username || 'User'}`);
-            
-            // 跳转首页
             navigate('/'); 
 
         } catch (error) {

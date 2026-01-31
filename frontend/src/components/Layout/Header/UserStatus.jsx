@@ -18,8 +18,7 @@ const UserStatus = () => {
   // 最新的 slice 里状态叫 cartItems，所以这里要解构 cartItems
   const { cartItems } = useSelector((state) => state.cart || {});
   
-  // 增加空值保护，确保它永远是数组
-  const safeCartItems = cartItems || []; 
+  const safeCartItems = Array.isArray(cartItems) ? cartItems : [];
 
   // 3. 计算逻辑 (使用 safeCartItems)
   const cartItemCount = safeCartItems.reduce((sum, item) => sum + (item.qty || 0), 0);

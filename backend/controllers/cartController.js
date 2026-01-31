@@ -1,39 +1,50 @@
 
-//demo db data
-const cartStore = {
-    demoUser: { items: { p1: 1, p2: 2 } },
+const User = require('../models/User'); 
+
+const getCart = async (req, res) => {
+    try {
+       
+        const user = await User.findById(req.user._id);
+
+        if (user) {
+            
+            return res.json({ items: user.cart || [] });
+        } else {
+            return res.status(404).json({ message: "User not found" });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Server Error" });
+    }
 };
 
-const getUserId = () => "demoUser";
+const updateCart = async (req, res) => {
+    // console.log("req.body =", req.body); 
 
-const getCart = (req, res) => {
-    const userId = getUserId();//  login：const userId = req.user.id;
-    const cart = cartStore[userId] || { items: {} };
+    const { items } = req.body;
 
-    return res.json({ items: cart.items });
-};
-
-const updateCart = (req, res) => {
-
-    console.log("req.body =", req.body);
-
-    const userId = getUserId();  //  after login：const userId = req.user.id;
-
-    if (!req.body) {
-        return res.status(400).json({ message: "Missing request body" });
-      }
-
-    const items = req.body?.items;
-
-    const newCart = {};
-    for (const [productId,qty] of Object.entries(items)) {
-        const n = Number(qty);
-        newCart[productId] = n;
+    if (!items) {
+        return res.status(400).json({ message: "Missing items" });
     }
 
-    cartStore[userId] = { items: newCart };
+    try {
 
-    return res.json({ items: newCart });
+        const user = await User.findById(req.user._id);
+
+        if (user) {
+   
+            user.cart = items; 
+
+            const updatedUser = await user.save();
+
+            return res.json({ items: updatedUser.cart });
+        } else {
+            return res.status(404).json({ message: "User not found" });
+        }
+    } catch (error) {
+        console.error("Save cart failed:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
 };
 
 module.exports = { getCart, updateCart };

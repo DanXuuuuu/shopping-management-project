@@ -35,7 +35,7 @@ const AddToCart = ({ product }) => {
   // 3. Clicking the "-" button -> Early Return Pattern
   const handleDecrease = (e) => {
     e.preventDefault();
-    dispatch(decreaseQty({productId: product._id }));
+    dispatch(decreaseQty({productId: product._id}));
   };
 
   // --- Rendering Logic ---

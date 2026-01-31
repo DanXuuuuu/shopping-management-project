@@ -2,39 +2,35 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { logout } from "./authSlice";
 
 const GUEST_CART_KEY = "guest_cart";
-const BASE_URL_API = 'http://localhost:8080/api'; // 请确保端口号正确
-
+const BASE_URL_API = 'http://localhost:8080/api'; 
 // --- Helper: Local Storage ---
-// 加载本地购物车
+
 const loadGuestCart = () => {
   try {
-    const raw = localStorage.getItem(GUEST_CART_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    
-    // 兼容逻辑：不管存的是对象还是数组，最终我们都需要一个数组
-    if (Array.isArray(parsed)) return parsed;
-    if (parsed.cartItems) return parsed.cartItems; // 兼容旧名字
-    if (parsed.items) return parsed.items;         // 兼容旧名字
-    return [];
+    const parsed = JSON.parse(localStorage.getItem(GUEST_CART_KEY));
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
+ 
     return [];
   }
 };
 
-// 保存本地购物车
+
 const saveGuestCart = (cartItems) => {
   localStorage.setItem(GUEST_CART_KEY, JSON.stringify(cartItems));
 };
 
-// 清空本地购物车
+
 const clearGuestCart = () => {
   localStorage.removeItem(GUEST_CART_KEY);
 };
 
-// --- Async Thunks (异步操作) ---
+// --- Async Thunks  ---
 
-// 1. 验证 Promo Code
+/**
+ * Promo validate
+ * POST /api/promos/validate  body: { code }
+ */
 export const validatePromoCode = createAsyncThunk(
   "cart/validatePromoCode",
   async (code, { rejectWithValue }) => {
@@ -42,24 +38,28 @@ export const validatePromoCode = createAsyncThunk(
       const res = await fetch(`${BASE_URL_API}/promos/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // headers: { Authorization: `Bearer ${token}` }
         body: JSON.stringify({ code }),
       });
       const data = await res.json();
       if (!res.ok) return rejectWithValue(data?.message || "Failed to validate promo");
-      return data;
+      return data;// { code, discount, isValid, message }
     } catch (err) {
       return rejectWithValue(err.message);
     }
   }
 );
 
-// 2. 获取购物车 (Fetch)
+/**
+ * Fetch cart
+ * GET /api/cart => { items }
+ */
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
-      if (!auth || !auth.token) return []; // 未登录返回空数组
+      if (!auth || !auth.token) return []; 
 
       const res = await fetch(`${BASE_URL_API}/cart`, {
         method: "GET",
@@ -71,10 +71,13 @@ export const fetchCart = createAsyncThunk(
 
       const data = await res.json();
       if (!res.ok) return rejectWithValue(data?.message);
-
-      // 确保返回的是数组
-      // 后端可能返回 { items: [...] } 或 { cartItems: [...] }
-      return data.items || data.cartItems || []; 
+      /*
+      if (Array.isArray(data)) return data;
+      if (data.items && Array.isArray(data.items)) return data.items;
+      if (data.cartItems && Array.isArray(data.cartItems)) return data.cartItems;
+      */
+      // 如果以上都不是，说明数据坏了，返回空数组保命
+      return [];
 
     } catch (err) {
       return rejectWithValue(err.message);
@@ -82,16 +85,19 @@ export const fetchCart = createAsyncThunk(
   }
 );
 
-// 3. 保存购物车 (Save)
+/**
+ * Save cart
+ * PUT /api/cart  body: { items }
+ */
 export const saveCart = createAsyncThunk(
   "cart/saveCart",
-  async (cartItems, { rejectWithValue, getState }) => {
+  async (arg, { rejectWithValue, getState }) => {
     try {
-      const { auth } = getState();
-      if (!auth || !auth.token) return cartItems; // 未登录不存后端
+      const items = Array.isArray(arg) ? arg : arg.items;
+      const token = arg.token || getState().auth.token;
 
-      // 转换格式：前端是完整对象数组，发给后端只发 { product: ID, qty: N }
-      const payload = cartItems.map(item => ({
+      if (!token) return items; 
+      const payload = items.map(item => ({
         product: item.product._id || item.product, 
         qty: item.qty
       }));
@@ -99,16 +105,19 @@ export const saveCart = createAsyncThunk(
       const res = await fetch(`${BASE_URL_API}/cart`, {
         method: "PUT",
         headers: { 
-            "Content-Type": "application/json", 
-            "Authorization": `Bearer ${auth.token}`
-        },
-        body: JSON.stringify({ items: payload }), // 后端通常期望 keys 叫 items
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}` 
+        }, 
+        body: JSON.stringify({ items: payload }),
       });
 
       const data = await res.json();
-      if (!res.ok) return rejectWithValue(data?.message);
-      
-      return data.items || [];
+
+      if (!res.ok) {
+        return rejectWithValue(data?.message || "Failed to save cart");
+      }
+
+      return data.items || []; 
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -144,14 +153,20 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    openCart: (state) => { state.isOpen = true; },
-    closeCart: (state) => { state.isOpen = false; },
+    openCart: (state) => { 
+      state.isOpen = true; 
+    },
+    closeCart: (state) => { 
+      state.isOpen = false; 
+    },
     
-    // ✅ AddToCart: 使用 cartItems
+    //  AddToCart
     addToCart: (state, action) => {
-      const product = action.payload; // 必须是完整 Product 对象
-      
-      // 使用 cartItems 查找
+      const product = action.payload;  //
+      if (!Array.isArray(state.cartItems)) { //Array of Objects
+         state.cartItems = [];
+      }
+
       const existingItem = state.cartItems.find((item) => item.product._id === product._id);
 
       if (existingItem) {
@@ -159,19 +174,19 @@ const cartSlice = createSlice({
            existingItem.qty += 1;
         }
       } else {
-        // 使用 cartItems 推入
+   
         state.cartItems.push({
           product: product, 
           qty: 1
         });
       }
       
-      state.promo = initialState.promo; // 重置折扣
+      state.promo = initialState.promo; 
       state.dirty = true;
-      saveGuestCart(state.cartItems);   // 保存到本地
+      saveGuestCart(state.cartItems);   
     },
-
-    increaseQty: (state, action) => {
+    
+    increaseQty: (state, action) => { 
       const { productId, maxQty } = action.payload;
       const item = state.cartItems.find((x) => x.product._id === productId);
 
@@ -216,7 +231,7 @@ const cartSlice = createSlice({
       state.dirty = false;
     },
     
-    // 登出清空
+    
     clearCart: (state) => {
         state.cartItems = [];
         clearGuestCart();
@@ -225,7 +240,7 @@ const cartSlice = createSlice({
   
   extraReducers: (builder) => {
       builder
-        // Promo
+        // Promo validate
         .addCase(validatePromoCode.fulfilled, (state, action) => {
           state.promo = {
             ...state.promo,
@@ -239,7 +254,6 @@ const cartSlice = createSlice({
         // Fetch Cart
         .addCase(fetchCart.fulfilled, (state, action) => {
           state.cartSync.fetchStatus = "succeeded";
-          // ✅ 赋值给 cartItems
           state.cartItems = action.payload || [];
           state.dirty = false;
           clearGuestCart();
@@ -254,11 +268,8 @@ const cartSlice = createSlice({
         //logout clear cart action
         .addCase(logout, (state) => {
             console.log("Logout detected: Clearing cart...");
-            
-            // 1. 清空数组
             state.cartItems = [];
             
-            // 2. 重置所有状态回初始值
             state.promo = {
                 status: "idle",
                 error: null,
@@ -277,7 +288,6 @@ const cartSlice = createSlice({
             state.dirty = false;
             state.promoInput = "";
 
-            // 3. 同时也清除本地缓存
             clearGuestCart();
         });
 

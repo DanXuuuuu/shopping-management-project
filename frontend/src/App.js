@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector  } from "react-redux";
+import { useSelector, useDispatch  } from "react-redux";
+import { useEffect } from 'react';
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import UpdatePassword from "./pages/auth/UpdatePassword";
@@ -8,15 +9,12 @@ import ProductList from './pages/ProductList';
 import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './components/cart/Cart';
+import { fetchCart, saveCart } from "./store/cartSlice";
+import { loginSuccess } from "./store/authSlice";
 
-
-// --- ✨ 新增：路由守卫组件 ✨ ---
-// 作用：如果不是管理员，强行踢回首页 (Req D & E 的双重保险)
 const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
 
-  // 1. 必须登录
-  // 2. 角色必须是 admin
   if (!isAuthenticated || !user || user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
@@ -25,10 +23,13 @@ const AdminRoute = ({ children }) => {
 };
 
 function App(){
-/*
+
   // send action to Redux 
   const dispatch = useDispatch();
+  const { cartItems, dirty } = useSelector((state) => state.cart);
+  const { token } = useSelector((state) => state.auth);
   // reloading the login state from localStorage 
+  
   useEffect(()=>{
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
@@ -36,10 +37,13 @@ function App(){
     if(token && userStr){
       try{
         const user = JSON.parse(userStr);
+
         dispatch(loginSuccess({
           user: user,
           token: token
         }));
+        
+        dispatch(fetchCart());
         console.log('Logi state restored from localStorage ');
 
       }catch(error){
@@ -50,7 +54,19 @@ function App(){
 
       }
     }
-  }, [dispatch]);*/
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (token && dirty) {
+     
+      const timer = setTimeout(() => {
+        console.log("Auto-saving cart to server...");
+        dispatch(saveCart(cartItems)); 
+      }, 500); 
+
+      return () => clearTimeout(timer);
+    }
+  }, [cartItems, dirty, token, dispatch]);
 
   return (
  
