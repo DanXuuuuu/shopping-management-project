@@ -3,6 +3,7 @@ import AuthForm from "../../components/auth/AuthForm";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../store/authSlice"; 
+import { fetchCart } from "../../store/cartSlice";
 
 const SignIn = () => {
     const navigate = useNavigate();
@@ -15,9 +16,11 @@ const SignIn = () => {
             const userData = await dispatch(login(formData)).unwrap();
             
             console.log('Login success:', userData);
-            alert(`Login successful! Welcome ${userData.username || 'User'}`);
             
-            // 👇 修改点 3: 不需要手动 setItem localStorage，slice 里已经做过了
+            // 登录成功后，立刻去后端拉取购物车！
+            // 这一步会将数据库里的 cart 填充到 Redux 的 cartItems
+            await dispatch(fetchCart());
+            alert(`Login successful! Welcome ${userData.username || 'User'}`);
             
             // 跳转首页
             navigate('/'); 

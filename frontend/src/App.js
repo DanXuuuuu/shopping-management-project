@@ -7,6 +7,8 @@ import Layout from './components/Layout/Layout';
 import ProductList from './pages/ProductList';
 import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
+import Cart from './components/cart/Cart';
+
 
 // --- ✨ 新增：路由守卫组件 ✨ ---
 // 作用：如果不是管理员，强行踢回首页 (Req D & E 的双重保险)
@@ -54,6 +56,7 @@ function App(){
  
       <Router>
         <Layout>
+        <Cart />
         <Routes>
           {/* 公开路由：所有人都能看 */}
           <Route path="/" element={<ProductList />} />

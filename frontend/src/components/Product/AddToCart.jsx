@@ -10,7 +10,7 @@ const AddToCart = ({ product }) => {
   const cartItems = useSelector((state) => state.cart.cartItems);
   //search the 'cartItems' array using the product ID.
   const cartItem = cartItems.find((item) => {
-      return item._id === product._id;
+      return item.product._id === product._id;
   });
   
   // Determine the current quantity
@@ -29,13 +29,13 @@ const AddToCart = ({ product }) => {
   //2. Clicking the "+" butto
   const handleIncrease = (e) => {
     e.preventDefault();
-    dispatch(increaseQty(product._id));
+    dispatch(increaseQty({ productId: product._id, maxQty: product.countInStock }));
   };
 
   // 3. Clicking the "-" button -> Early Return Pattern
   const handleDecrease = (e) => {
     e.preventDefault();
-    dispatch(decreaseQty(product._id));
+    dispatch(decreaseQty({productId: product._id }));
   };
 
   // --- Rendering Logic ---

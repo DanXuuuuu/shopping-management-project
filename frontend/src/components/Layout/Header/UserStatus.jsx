@@ -2,76 +2,69 @@ import React from 'react';
 import { Stack, Button, Badge, Typography } from '@mui/material';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
-import { useNavigate } from 'react-router-dom';
-import { useSelector , useDispatch  } from 'react-redux';
-import { logout } from '../../../store/authSlice';
-
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom"; 
+import { openCart } from '../../../store/cartSlice';
+import { logout } from '../../../store/authSlice'; 
 
 const UserStatus = () => {
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  // --- 1. 获取用户状态 (目前是模拟，未来可以从 state.user 获取) ---
-  // 如果你已经做好了 User Auth，可以用下面这就话代替:
-  // const { userInfo } = useSelector((state) => state.user);
-  //const { isAuthenticated, user } = useSelector(state => state.auth);
+  // 1. 获取 Auth 状态
+  const { user, isAuthenticated } = useSelector((state) => state.auth || {});
 
-  // --- 2. 获取购物车数据 ---
-  // 我们使用你之前定义的 cartItems 数组
-  const { cartItems } = useSelector((state) => state.cart);
-
-  // --- 3. 计算数量和总价 ---
-  // 你的 cartItems 是数组 [{qty: 1, price: 99}, ...]，所以直接累加即可
-  const cartItemCount = cartItems.reduce((sum, item) => sum + item.qty, 0);
+  // 2. ✨ 核心修改点：适配最新的 cartSlice
+  // 最新的 slice 里状态叫 cartItems，所以这里要解构 cartItems
+  const { cartItems } = useSelector((state) => state.cart || {});
   
-  const subtotal = cartItems.reduce((sum, item) => {
-    return sum + (item.price * item.qty);
+  // 增加空值保护，确保它永远是数组
+  const safeCartItems = cartItems || []; 
+
+  // 3. 计算逻辑 (使用 safeCartItems)
+  const cartItemCount = safeCartItems.reduce((sum, item) => sum + (item.qty || 0), 0);
+
+  const subtotal = safeCartItems.reduce((sum, item) => {
+    // 兼容处理：确保能找到 price (item.product.price)
+    const price = item.product?.price || item.price || 0; 
+    return sum + (price * (item.qty || 0));
   }, 0);
 
-  // 金额格式化小助手
   const money = (n) => n.toFixed(2);
 
-  // --- 4. 事件处理 ---
-
-  // read the login state from redux
-  const { isAuthenticated, user } = useSelector(state=> state.auth);
-
-  // 模拟登录状态，Phase I 之后将由全局 Auth 状态控制
-
-  // deal with the signin button 
-  const handleSignIn = () => {
-    navigate('/signin');
-  };
-
-  const handleSignOut = () => {
-    dispatch(logout());
-    navigate('/signin');
-  };
+  // --- 事件处理 ---
 
   const handleCartClick = () => {
-    navigate('/cart');
-    // 如果你想用侧边栏抽屉模式，可以用队友写的: dispatch(openCart())
+    dispatch(openCart());
+  };
+
+  const handleSignInClick = () => {
+    navigate("/signin");
+  };
+
+  const handleSignOutClick = () => {
+    dispatch(logout());
+    navigate("/");
   };
 
   return (
     <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
       
-      {/* 登录/退出状态控制 */}
-      {isAuthenticated ? (
+      {isAuthenticated && user ? (
         <Button 
           color="inherit" 
-          onClick={handleSignOut}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={handleSignOutClick}
         >
-         { user?.username } Sign Out
+         Hi, { user.username || 'User' } (Sign Out)
         </Button>
       ) : (
         <Button 
           color="inherit" 
-          onClick={handleSignIn}
           startIcon={<PersonOutlineIcon />}
           sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.9rem' }}
+          onClick={handleSignInClick}
         >
           Sign In
         </Button>
@@ -81,11 +74,7 @@ const UserStatus = () => {
       <Button 
         color="inherit" 
         sx={{ 
-          textTransform: 'none', 
-          fontWeight: 600,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
+          textTransform: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1
         }}
         onClick={handleCartClick}
       >
@@ -100,6 +89,5 @@ const UserStatus = () => {
     </Stack>
   );
 };
-
 
 export default UserStatus;

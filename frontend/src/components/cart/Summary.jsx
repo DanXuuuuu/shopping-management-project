@@ -5,22 +5,16 @@ import {
     Button
   } from "@mui/material";
   import { useSelector } from "react-redux";
-  import { mockProductsById } from "../../mock/mockProducts";
   
   export default function Summary(){
 
-    const items = useSelector((s) => s.cart.items); 
-    const promo = useSelector((s) => s.cart.promo);
+    const { cartItems = [], promo } = useSelector((state) => state.cart || {});
   
-  
-    const productIds = Object.keys(items);
-  
-    const subtotal = productIds.reduce((sum, productId) => {
-      const qty = items[productId];
-      const product = mockProductsById[productId];
-      if (!product) return sum;
-      return sum + product.price * qty;
-    }, 0);
+    const subtotal = cartItems.reduce((sum, item) => {
+      const price = item.product?.price || 0;
+      const qty = item.qty || 0;
+      return sum + (price * qty);
+  }, 0);
   
     const tax = subtotal * 0.1;
     const discount = promo.discount || 0;
@@ -56,7 +50,7 @@ import {
             fullWidth
             variant="contained"
             size="large"
-            disabled={productIds.length === 0}
+            disabled={cartItems.length === 0}
             onClick={() => alert("Checkout coming soon")}
             sx={{
               bgcolor: "#4b47ff",

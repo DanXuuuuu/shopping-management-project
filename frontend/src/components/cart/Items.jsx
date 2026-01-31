@@ -8,7 +8,6 @@ import {
   import AddIcon from "@mui/icons-material/Add";
   import RemoveIcon from "@mui/icons-material/Remove";
   import { useDispatch, useSelector } from "react-redux";
-  import { mockProductsById } from "../../mock/mockProducts";
   
   import {
     increaseQty,
@@ -20,9 +19,7 @@ import {
 
     const dispatch = useDispatch();
     
-    const items = useSelector((s) => s.cart.items); 
-  
-    const productIds = Object.keys(items);
+    const { cartItems = [] } = useSelector((state) => state.cart || {});
 
     const money = (n) => n.toFixed(2);
    
@@ -31,18 +28,17 @@ import {
     return (
          
          <Box sx={{ px: 2 }}>
-         {productIds.length === 0 ? (
+         {cartItems.length === 0 ? (
            <Typography sx={{ py: 3 }} color="text.secondary">
              Your cart is empty.
            </Typography>
          ) : (
-           productIds.map((productId) => {
-             const qty = items[productId];
-             const product = mockProductsById[productId];
+           cartItems.map((item) => {
+             const { product, qty } = item;
              if (!product) return null;
 
              return (
-               <Box key={productId}>
+               <Box key={product._id}>
                  <Stack
                    direction="row"
                    spacing={2}
@@ -72,7 +68,7 @@ import {
                      <Stack direction="row" spacing={1} alignItems="center">
                        <IconButton
                          size="small"
-                         onClick={() => dispatch(decreaseQty({ productId }))}
+                         onClick={() => dispatch(decreaseQty({ productId: product._id }))}
                        >
                          <RemoveIcon fontSize="small" />
                        </IconButton>
@@ -83,7 +79,7 @@ import {
 
                        <IconButton
                          size="small"
-                         onClick={() => dispatch(increaseQty({ productId }))}
+                         onClick={() => dispatch(increaseQty({ productId: product._id, maxQty: product.countInStock }))}
                        >
                          <AddIcon fontSize="small" />
                        </IconButton>
@@ -93,7 +89,7 @@ import {
                        <Button
                          variant="text"
                          size="small"
-                         onClick={() => dispatch(removeItem({ productId }))}
+                         onClick={() => dispatch(removeItem({ productId: product._id }))}
                          sx={{ ml: "auto", textTransform: "none" }}
                        >
                          Remove
