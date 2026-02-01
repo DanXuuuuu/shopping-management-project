@@ -30,7 +30,7 @@ const SignIn = () => {
               // after upload and then get data one more time 
             await dispatch(fetchCart());
 
-            alert(`Login successful! Welcome ${userData.username || 'User'}`);
+            alert(`Login successful! Welcome ${userData.user?.username || 'User'}`);
             navigate('/'); 
 
         } catch (error) {
