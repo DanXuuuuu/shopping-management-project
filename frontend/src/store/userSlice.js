@@ -8,7 +8,7 @@ const getErrorMsg = (error) => {
     : error.message;
 };
 
-// 1. ✨ F: 初始化时读取本地存储 ✨
+// 1.  初始化时读取本地存储 
 const userInfoFromStorage = localStorage.getItem('userInfo')
   ? JSON.parse(localStorage.getItem('userInfo'))
   : null;
