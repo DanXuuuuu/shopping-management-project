@@ -3,27 +3,19 @@ const User = require('../models/User');
 
 const getCart = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).populate('cart.product');
 
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const cart = user.cart || []; // [{ product: "id", qty: 1 }, ...]
+    const activeItems = user.cart.filter((item) => item.product !== null);
 
-    // get all productIds
-    const productIds = cart
-      .map((i) => i.product)
-      .filter(Boolean);
+    if (activeItems.length !== user.cart.length) {
+        user.cart = activeItems;
+        await user.save(); 
+    }
 
-    // ccheck all products 
-    const products = await Product.find({ _id: { $in: productIds } });
+    return res.json({ items: activeItems });
 
-    // make sure this structure is frontend need { product: {...}, qty }
-    const items = cart.map((i) => ({
-      qty: i.qty,
-      product: products.find((p) => String(p._id) === String(i.product)) || null,
-    }));
-
-    return res.json({ items });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Server Error" });
