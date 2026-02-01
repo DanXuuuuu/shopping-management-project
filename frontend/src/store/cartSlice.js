@@ -35,15 +35,17 @@ export const validatePromoCode = createAsyncThunk(
   "cart/validatePromoCode",
   async (code, { rejectWithValue }) => {
     try {
+      const normalizedCode = (code ?? "").trim().toUpperCase();
       const res = await fetch(`${BASE_URL_API}/promos/validate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // headers: { Authorization: `Bearer ${token}` }
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: normalizedCode }),
       });
-      const data = await res.json();
-      if (!res.ok) return rejectWithValue(data?.message || "Failed to validate promo");
-      return data;// { code, discount, isValid, message }
+      if (!res.ok) {
+        const raw = await res.text();
+        return rejectWithValue(raw || `HTTP ${res.status}`);
+      }
+      return await res.json();
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -252,13 +254,10 @@ const cartSlice = createSlice({
       builder
         // Promo validate
         .addCase(validatePromoCode.fulfilled, (state, action) => {
-          state.promo = {
-            ...state.promo,
-            ...action.payload,    
-            status: "succeeded",
-            error: null,
-            message: action.payload.message || (action.payload.isValid ? "Applied!" : "Invalid"),
-          };
+          state.promo.status = "succeeded";
+          state.promo.isValid = action.payload.isValid;
+          state.promo.discount = action.payload.discount || 0;
+          state.promo.message = action.payload.message || "";
         })
         
         // Fetch Cart

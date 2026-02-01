@@ -1,47 +1,35 @@
-// import package we need 
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db');
-const errorHandler = require('./middleware/errorHandler');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const connectDB = require("./config/db");
+const errorHandler = require("./middleware/errorHandler");
 
-
-// here is read the env file 
 dotenv.config();
 
-const authRoutes = require('./routes/auth');
-const productRoutes = require('./routes/productRoutes');
+const authRoutes = require("./routes/auth");
+const productRoutes = require("./routes/productRoutes");
+const promoRoutes = require("./routes/promoRoutes");
+const cartRoutes = require("./routes/cartRoutes");
 
-// create express app 
 const app = express();
 connectDB();
 
 // middleware
-app.use(cors()); //allow frontend visit  
-app.use(express.json()); //analysis the json format request 
+app.use(cors());
+app.use(express.json());
 
-app.use('/api/auth', authRoutes);
-
-
-const promoRoutes = require("./routes/promoRoutes");
-const cartRoutes = require("./routes/cartRoutes");
-
+// routes
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/promos", promoRoutes);
 
+// health check
 app.get("/", (req, res) => {
   res.json({ message: "backend running" });
 });
-// router 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', productRoutes);
 
-// test route
-app.get('/', (req, res) => {
-  res.json({ message: 'backend running' });
-});
-
-// error middleware 
+// error middleware (must be last)
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 8080;

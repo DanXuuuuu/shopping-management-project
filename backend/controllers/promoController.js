@@ -1,29 +1,42 @@
-const validatePromo  = (req,res) =>{
+const Promo = require("../models/promo");
 
+const validatePromo  = async(req,res) =>{
+ try{
     const raw = req.body?.code || '';
-    const code = String(raw).trim().toUpperCase();
+    const code = String(raw).trim().toUpperCase().replace(/\s+/g, "");;
 
-    if(!code){
-        return res.status(400).json({ message: "Promo code is required" });
+    if (!code) {
+      return res.status(400).json({
+        isValid: false,
+        discount: 0,
+        message: "Promo code is required",
+      });
     }
 
-    const PROMOS = {
-        "20 DOLLAR OFF": { type: "fixed", discount: 20, message: "Applied $20 off!" },
-        "10 DOLLAR OFF": { type: "fixed", discount: 10, message: "Applied $10 off!" },
-      };
-
-    const promo = PROMOS[code];
+    const promo = await Promo.findOne({ code });
 
     if (!promo) {
-        return res.status(400).json({ message: "Invalid promo code" });
-      }
+      return res.json({
+        isValid: false,
+        discount: 0,
+        message: "Invalid promo code",
+      });
+    }
 
    return res.json({
-    code,
-    discount: promo.discount,
     isValid: true,
-    message: promo.message
+    code: promo.code,
+    discount: promo.discount, 
+    message: `Applied $${promo.discount} off`,
    });
+  }catch (e) {
+    console.error("validatePromo error:", e);
+    return res.status(500).json({
+      isValid: false,
+      discount: 0,
+      message: "Server error validating promo",
+    });
+  }
 }
 
 module.exports = { validatePromo };
