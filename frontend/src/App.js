@@ -23,30 +23,35 @@ const AdminRoute = ({ children }) => {
 };
 
 function App(){
-
+  
   // send action to Redux 
   const dispatch = useDispatch();
   const { cartItems, dirty } = useSelector((state) => state.cart);
   const { token } = useSelector((state) => state.auth);
-  // reloading the login state from localStorage 
+
+  // reloading the login state & cart from localStorage 
   
   useEffect(()=>{
+     
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
 
     if(token && userStr){
       try{
         const user = JSON.parse(userStr);
-
         dispatch(loginSuccess({
           user: user,
           token: token
-        }));
-        
+        })); 
+        // reload cart 
         dispatch(fetchCart());
-        console.log('Logi state restored from localStorage ');
+    
+        console.log('Login state restored from localStorage ');
+
+  
 
       }catch(error){
+
         console.error('Failed to restore login state:',error);
         // if localStorage data error ,clean localStorage
         localStorage.removeItem('token');
@@ -74,11 +79,11 @@ function App(){
         <Layout>
         <Cart />
         <Routes>
-          {/* 公开路由：所有人都能看 */}
+          {/* Public Route: all person could see */}
           <Route path="/" element={<ProductList />} />
           <Route path="/product" element={<ProductList />} />
           <Route path="/product/:id" element={<ProductDetail />} />
-          {/* 认证路由 */}
+          {/* Auth Route */}
           <Route path="/signin" element={<SignIn/>} />
           <Route path="/signup" element={<SignUp/>} />
           <Route path="/update-password" element={<UpdatePassword/>}/>

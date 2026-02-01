@@ -3,6 +3,7 @@ import AuthForm from "../../components/auth/AuthForm";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../store/authSlice"; 
+import { fetchCart } from '../../store/cartSlice';
 
 const SignUp = () => {
     const navigate = useNavigate();
@@ -16,13 +17,16 @@ const SignUp = () => {
         }
         
         try {
-            // 👇 修改点 3: 触发 Redux action
+            // call Redux action
             await dispatch(register(formData)).unwrap();
             
             console.log('Signup success');
+            // this part retrive the cart after sign up 
+            await dispatch(fetchCart());
+
             alert('Registration successful!');
             
-            // 不需要手动 localStorage，slice 已经存了
+            // auto - localStorage，slice already store 
             navigate('/'); 
 
         } catch (error) {
@@ -30,8 +34,8 @@ const SignUp = () => {
 
             const errorMsg = 
             error.message ||                 // Redux Toolkit 序列化后的错误信息
-            error.response?.data?.message || // 常见的 Express 错误格式
-            error.response?.data?.error ||   // 你的 errorHandler 格式
+            error.response?.data?.message || // usual Express error format
+            error.response?.data?.error ||   //   errorHandler format
             "Unknown error occurred";
 
             alert(`Registration failed: ${errorMsg}`);

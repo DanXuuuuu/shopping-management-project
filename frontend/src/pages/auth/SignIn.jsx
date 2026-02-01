@@ -11,23 +11,23 @@ const SignIn = () => {
     const { cartItems } = useSelector((state) => state.cart);
     const handleSignIn = async (formData) => {
         try {
-            //  触发 Redux action 并等待结果
-            // unwrap() 会把 Promise 拆包：如果成功返回 data，如果失败抛出 error
+            //  trigger Redux action and return result 
+            // unwrap() unpacks promise：success return data，false return error
             const userData = await dispatch(login(formData)).unwrap();
             
             console.log('Login success:', userData);
             
             if (cartItems && cartItems.length > 0) {
-                // 情况 A: 如果游客购物车里有东西
-                // 必须先把这些东西“上传/合并”到后端数据库
+                // situation A: cart has items
+                // “upload and merge” to db first
                 console.log("Syncing guest cart to server...");
                 await dispatch(saveCart({ 
-                    items: cartItems,       // 购物车商品
-                    token: userData.token   // 刚刚拿到的最新 Token
+                    items: cartItems,       // cart item
+                    token: userData.token   // newest token 
                 })).unwrap();
             }
                 
-                // 上传完后，再去拉取一次确定的最新数据（可选，但更稳妥）
+              // after upload and then get data one more time 
             await dispatch(fetchCart());
 
             alert(`Login successful! Welcome ${userData.username || 'User'}`);
@@ -40,20 +40,20 @@ const SignIn = () => {
                 ? error 
                 : (error.message || JSON.stringify(error));
 
-            // 4. ✨ 核心修改：检测 "User not found"
-            // 后端返回的是 404 "User not found, please sign up"
-            // 我们检查 message 里是否包含 'not found' 关键字
+            // check "User not found"
+            // backend return  404 "User not found, please sign up"
+            // we check message if has 'not found'  keyword
             const isUserNotFound = errorMsg.toLowerCase().includes('not found') || 
                                    errorMsg.toLowerCase().includes('sign up');
 
             if (isUserNotFound) {
-                // 弹出确认框引导注册
+                // pop the sign up box 
                 const confirmSignup = window.confirm("Account does not exist. Do you want to sign up?");
                 if (confirmSignup) {
                     navigate('/signup');
                 }
             } else {
-                // 其他错误（如 Invalid password 401）直接 Alert
+                // other errors like Invalid password 401）-  Alert
                 alert(`Login failed: ${errorMsg}`);
             }
         }

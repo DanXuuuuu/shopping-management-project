@@ -21,7 +21,7 @@ import {
     
     const { cartItems = [] } = useSelector((state) => state.cart || {});
 
-    const money = (n) => n.toFixed(2);
+    const money = (n=0) => Number(n).toFixed(2);
    
    
    
@@ -34,8 +34,12 @@ import {
            </Typography>
          ) : (
            cartItems.map((item) => {
-             const { product, qty } = item;
-             if (!product) return null;
+             const { product, qty, productId } = item;
+             if(!product){
+              return (
+                <Box key={productId || item.product}/>
+              );
+             }
 
              return (
                <Box key={product._id}>
@@ -61,7 +65,8 @@ import {
                      >
                        <Typography fontWeight={700}>{product.name}</Typography>
                        <Typography fontWeight={600}>
-                         ${money(product.price)}
+                        {/* ? make sure avoid this siutation of undefined or null */}
+                         ${money(product?.price)}
                        </Typography>
                      </Stack>
 

@@ -1,10 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-// ⚠️ 请根据你的后端端口调整 (3000 或 8080)
+// port 
 const BASE_URL = 'http://localhost:8080/api/auth';
 
-// --- Helper: 持久化状态读取 (Requirement 1.f) ---
-// 虽然 App.js 里写了恢复逻辑，但这里保留它可以防止页面刷新时的短暂闪烁
+// --- Helper: 持久化状态读取 ---
+// keep it could protect the page fresh stable 
 const getUserFromStorage = () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -18,7 +18,7 @@ const getUserFromStorage = () => {
     return { user: null, token: null, isAuthenticated: false };
 };
 
-// --- Async Thunks (异步业务逻辑) ---
+// --- Async Thunk ---
 
 // 1. Sign Up
 export const register = createAsyncThunk(
@@ -109,7 +109,7 @@ const authSlice = createSlice({
     initialState,
     
     reducers: {
-        // 👇👇👇 1. 新增：用于 App.js 手动恢复登录状态
+        // use for App.js Manually restore login status
         loginSuccess: (state, action) => {
             state.isAuthenticated = true;
             state.user = action.payload.user;
@@ -117,7 +117,7 @@ const authSlice = createSlice({
             state.error = null;
         },
 
-        // Logout 逻辑
+        // Logout logic
         logout: (state) => {
             state.user = null;
             state.token = null;
@@ -186,7 +186,7 @@ const authSlice = createSlice({
     }
 });
 
-// 👇👇👇 2. 记得在这里导出 loginSuccess
+//  
 export const { logout, clearError, loginSuccess } = authSlice.actions;
 
 export default authSlice.reducer;

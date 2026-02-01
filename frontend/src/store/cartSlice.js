@@ -59,8 +59,10 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
-      if (!auth || !auth.token) return []; 
-
+      
+      if (!auth || !auth.token) {
+        return []; 
+      }
       const res = await fetch(`${BASE_URL_API}/cart`, {
         method: "GET",
         headers: { 
@@ -68,16 +70,24 @@ export const fetchCart = createAsyncThunk(
             "Authorization": `Bearer ${auth.token}`
         },
       });
-
+ 
       const data = await res.json();
-      if (!res.ok) return rejectWithValue(data?.message);
+     
+      if (!res.ok){ 
+      
+        return rejectWithValue(data?.message);
+      }
+        // return the cart data 
+      const items = data.items || data.cartItems || data || [];
+     
+      return items;
       /*
       if (Array.isArray(data)) return data;
       if (data.items && Array.isArray(data.items)) return data.items;
       if (data.cartItems && Array.isArray(data.cartItems)) return data.cartItems;
       */
-      // 如果以上都不是，说明数据坏了，返回空数组保命
-      return [];
+      // 如果以上都不是，说明数据坏了，返回空数组avoid error 
+    
 
     } catch (err) {
       return rejectWithValue(err.message);
@@ -254,9 +264,12 @@ const cartSlice = createSlice({
         // Fetch Cart
         .addCase(fetchCart.fulfilled, (state, action) => {
           state.cartSync.fetchStatus = "succeeded";
-          state.cartItems = action.payload || [];
-          state.dirty = false;
-          clearGuestCart();
+
+          if(Array.isArray(action.payload)){
+            state.cartItems = action.payload;
+            state.dirty = false;
+            clearGuestCart();
+          }
         })
         
         // Save Cart

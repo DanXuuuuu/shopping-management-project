@@ -139,7 +139,7 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                 helperText={errors[field.name]}
                 // show /hide button 
                   InputProps ={
-                    field.type === 'password' && {
+                    field.type === 'password' ? {
                         endAdornment: (
                             <Button
                             onClick={()=> handleTogglePassword(field.name)}
@@ -158,8 +158,9 @@ const AuthForm = ({title, submitText, fields, onSubmit}) => {
                             >
                                 { showPassword[field.name] ? 'Hide' : 'Show'}
                             </Button>
-                        )
+                        ),
                     }
+                    : undefined
                   }
                 />
                
