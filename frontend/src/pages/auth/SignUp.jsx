@@ -3,7 +3,7 @@ import AuthForm from "../../components/auth/AuthForm";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../store/authSlice"; 
-import { fetchCart } from '../../store/cartSlice';
+// import { fetchCart } from '../../store/cartSlice';
 
 const SignUp = () => {
     const navigate = useNavigate();
@@ -21,8 +21,9 @@ const SignUp = () => {
             await dispatch(register(formData)).unwrap();
             
             console.log('Signup success');
-            // this part retrive the cart after sign up 
-            await dispatch(fetchCart());
+            // this part retrive the cart after sign up
+            // （i think new users dont have to fetch cart cuz cart it's empty)
+            // await dispatch(fetchCart());
 
             alert('Registration successful!');
             

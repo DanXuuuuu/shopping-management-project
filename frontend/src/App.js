@@ -30,7 +30,6 @@ function App(){
   const { token } = useSelector((state) => state.auth);
 
   // reloading the login state & cart from localStorage 
-  
   useEffect(()=>{
      
     const token = localStorage.getItem('token');
@@ -48,8 +47,6 @@ function App(){
     
         console.log('Login state restored from localStorage ');
 
-  
-
       }catch(error){
 
         console.error('Failed to restore login state:',error);
@@ -66,9 +63,10 @@ function App(){
      
       const timer = setTimeout(() => {
         console.log("Auto-saving cart to server...");
+        // auto-save cart
         dispatch(saveCart(cartItems)); 
       }, 500); 
-
+      // clean function excuting before next effect & component remove 
       return () => clearTimeout(timer);
     }
   }, [cartItems, dirty, token, dispatch]);
