@@ -76,7 +76,7 @@ const AddToCart = ({ product }) => {
         bgcolor: '#5346bd', 
         height: '40px',
         width: '120px',
-        '& .MuiButtonGroup-grouped': { border: 'none' } // 去掉按钮间的分割线
+        '& .MuiButtonGroup-grouped': { border: 'none' } 
       }}
     >
       <Button onClick={handleDecrease} sx={{ bgcolor: '#5346bd', width: '60px', fontSize: '1.2rem' }}>-</Button>

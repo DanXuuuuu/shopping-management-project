@@ -5,14 +5,40 @@ const Product = require('../models/productModel')
 //@access  Public
 const getProducts = async (req, res) => {
     try {
+        const pageSize = 8;
+        const page = Number(req.query.pageNumber) || 1;
+
         const keyword = req.query.keyword ? {
             name: {
                 $regex: req.query.keyword,
                 $options: 'i'
             }
         } : {};
-        const products = await Product.find({ ...keyword }).sort({ createdAt: -1 })
-        res.json(products)
+        let sortOption = { createdAt: -1 };
+        switch (req.query.sort) {
+            case 'price-asc':
+                sortOption = { price: 1 }; 
+                break;
+            case 'price-desc':
+                sortOption = { price: -1 }; 
+                break;
+            case 'last-added':
+                sortOption = { createdAt: -1 }; 
+                break;
+            default:
+                sortOption = { createdAt: -1 };
+    }
+        const count = await Product.countDocuments({ ...keyword });
+
+        const products = await Product.find({ ...keyword })
+            .sort(sortOption)
+            .skip(pageSize * (page - 1))
+            .limit(pageSize);
+        res.json({
+            products, 
+            page, 
+            pages: Math.ceil(count / pageSize)
+        });
     } catch (error) {
         res.status(500).json({ message: error.message })
     }

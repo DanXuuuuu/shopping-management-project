@@ -83,8 +83,8 @@ const CreateProduct = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
       // basic validation
-        if (!name || !price) {
-            alert("Please fill in name and price");
+        if (!name || !price || !category || !price || !description || !countInStock || !imageUrl) {
+            alert("Please fill in all fields.");
             return;
         }
     // Prepare the data object to send to the server
