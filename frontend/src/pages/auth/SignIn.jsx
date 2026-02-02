@@ -11,8 +11,10 @@ const SignIn = () => {
     const { cartItems } = useSelector((state) => state.cart);
     const handleSignIn = async (formData) => {
         try {
-            //  trigger Redux action and return result 
-            // unwrap() unpacks promise：success return data，false return error
+            //  trigger Redux action:  fetch POST api/ wait response/update state
+             // create an aysnc action - return a thunk function 
+            // sends the action to redux - return a promise
+            // unwrap - unpack redux promise to regular promise
             const userData = await dispatch(login(formData)).unwrap();
             
             console.log('Login success:', userData);

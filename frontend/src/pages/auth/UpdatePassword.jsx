@@ -9,7 +9,7 @@ import AuthForm from "../../components/auth/AuthForm";
     // {name:'confirmPassword', type:'password'}
 
 // 2.forget the password change the password(i choose this right now)
-// just need email and ? dont need real email link 
+// just need email and dont need real email link 
 
 
 const UpdatePassword = ()=>{

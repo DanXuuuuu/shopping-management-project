@@ -15,14 +15,17 @@ const SignUp = () => {
             alert("Passwords do not match!");
             return;
         }
-        
+        // thunk - automatic loading states & centralized 
         try {
-            // call Redux action
+             //trigger Redux action:  fetch POST api/ wait response/update state
+            // create an aysnc action - return a thunk function 
+            // sends the action to redux - return a promise
+            // unwrap - unpack redux promise to regular promise
             await dispatch(register(formData)).unwrap();
             
             console.log('Signup success');
             // this part retrive the cart after sign up
-            // （i think new users dont have to fetch cart cuz cart it's empty)
+            // （but i think new users dont have to fetch cart cuz cart it's empty so..)
             // await dispatch(fetchCart());
 
             alert('Registration successful!');

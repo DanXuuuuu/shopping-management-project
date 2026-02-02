@@ -3,7 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 // port 
 const BASE_URL = 'http://localhost:8080/api/auth';
 
-// --- Helper: 持久化状态读取 ---
+
 // keep it could protect the page fresh stable 
 const getUserFromStorage = () => {
     try {
@@ -22,21 +22,23 @@ const getUserFromStorage = () => {
 
 // 1. Sign Up
 export const register = createAsyncThunk(
-    'auth/register',
+    'auth/register', //action type prefix 
     async (userData, { rejectWithValue }) => {
         try {
+            // call api
             const res = await fetch(`${BASE_URL}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData),
             });
+            // wait for response
             const data = await res.json();
             
             if (!res.ok) throw new Error(data.message || 'Registration failed');
             
             localStorage.setItem('user', JSON.stringify(data.user));
             localStorage.setItem('token', data.token);
-            
+            // return success data
             return data; 
         } catch (err) {
             return rejectWithValue(err.message);
@@ -103,11 +105,11 @@ const initialState = {
     error: null,
     successMessage: null,
 };
-
+// handle state in slice 
 const authSlice = createSlice({
     name: 'auth',
     initialState,
-    
+    // sync actions
     reducers: {
         // use for App.js Manually restore login status
         loginSuccess: (state, action) => {
@@ -134,20 +136,23 @@ const authSlice = createSlice({
             state.successMessage = null;
         }
     },
-
+    // handle async action states
     extraReducers: (builder) => {
         builder
-            // --- Login ---
+            // login
+            //  When API call starts
             .addCase(login.pending, (state) => {
                 state.loading = true;
                 state.error = null;
             })
+            //  When API call succeeds
             .addCase(login.fulfilled, (state, action) => {
                 state.loading = false;
                 state.isAuthenticated = true;
                 state.user = action.payload.user; 
                 state.token = action.payload.token;
             })
+            // failed 
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
