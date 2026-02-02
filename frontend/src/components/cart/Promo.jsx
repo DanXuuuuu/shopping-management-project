@@ -58,13 +58,22 @@ export default function Promo() {
                         "&:hover": { bgcolor: "#3c38ff" },
                     }}
                 >
-                   {status === "loading" ? <CircularProgress size={20} color="inherit" /> : "Apply"}
+                    {status === "loading" ? (
+                        <Stack direction="row" spacing={1} alignItems="center">
+                            <CircularProgress size={16} color="inherit" />
+                            <Typography fontSize={13} fontWeight={600}>
+                                Checking…
+                            </Typography>
+                        </Stack>
+                    ) : (
+                        "Apply"
+                    )}
                 </Button>
             </Stack>
 
             {message && (
                 <Typography
-                    sx={{ mt: 1, fontSize: 13, fontWeight: 500 }}
+                    sx={{ mt: 0.75, fontSize: 12.5, fontWeight: 500, letterSpacing: 0.2 }}
                     color={isValid ? "success.main" : "error.main"}
                 >
                     {message}

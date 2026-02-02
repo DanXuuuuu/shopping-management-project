@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useSelector, useDispatch  } from "react-redux";
-import { useEffect } from 'react';
+import { useSelector  } from "react-redux";
 import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import UpdatePassword from "./pages/auth/UpdatePassword";
@@ -9,8 +8,7 @@ import ProductList from './pages/ProductList';
 import CreateProduct from './pages/CreateProduct';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './components/cart/Cart';
-import { fetchCart, saveCart } from "./store/cartSlice";
-import { loginSuccess } from "./store/authSlice";
+
 
 const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -24,53 +22,6 @@ const AdminRoute = ({ children }) => {
 
 function App(){
   
-  // send action to Redux 
-  const dispatch = useDispatch();
-  const { cartItems, dirty } = useSelector((state) => state.cart);
-  const { token } = useSelector((state) => state.auth);
-
-  // reloading the login state & cart from localStorage 
-  useEffect(()=>{
-     
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-
-    if(token && userStr){
-      try{
-        const user = JSON.parse(userStr);
-        dispatch(loginSuccess({
-          user: user,
-          token: token
-        })); 
-        // reload cart 
-        dispatch(fetchCart());
-    
-        console.log('Login state restored from localStorage ');
-
-      }catch(error){
-
-        console.error('Failed to restore login state:',error);
-        // if localStorage data error ,clean localStorage
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-
-      }
-    }
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (token && dirty) {
-     
-      const timer = setTimeout(() => {
-        console.log("Auto-saving cart to server...");
-        // auto-save cart
-        dispatch(saveCart(cartItems)); 
-      }, 500); 
-      // clean function excuting before next effect & component remove 
-      return () => clearTimeout(timer);
-    }
-  }, [cartItems, dirty, token, dispatch]);
-
   return (
  
       <Router>
