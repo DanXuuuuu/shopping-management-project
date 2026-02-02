@@ -48,27 +48,50 @@ export const register = createAsyncThunk(
 
 // 2. Sign In
 export const login = createAsyncThunk(
-    'auth/login',
-    async (userData, { rejectWithValue }) => {
-        try {
-            const res = await fetch(`${BASE_URL}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(userData),
-            });
-            const data = await res.json();
-            
-            if (!res.ok) throw new Error(data.message || 'Login failed');
+  'auth/login',
+  async (userData, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${BASE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
 
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('token', data.token);
-            
-            return data;
-        } catch (err) {
-            return rejectWithValue(err.message);
+      // read text first 
+      const raw = await res.text();
+      let data = null;
+
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch {
+        data = null;
+      }
+
+      //fail situation 
+      if (!res.ok) {
+        if (res.status === 404) {
+          return rejectWithValue('User not found');
         }
+        if (res.status === 401) {
+          return rejectWithValue('Invalid password');
+        }
+
+        return rejectWithValue(
+          data?.message || raw || `Login failed (${res.status})`
+        );
+      }
+
+      // login success 
+      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('token', data.token);
+
+      return data;
+    } catch (err) {
+      return rejectWithValue('Network error');
     }
+  }
 );
+
 
 // 3. Update Password
 export const updatePassword = createAsyncThunk(
