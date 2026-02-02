@@ -6,8 +6,10 @@ import axios from 'axios';
 // 1. Fetch all products
 export const fetchProducts = createAsyncThunk(
     'products/fetchProducts', 
-    async (keyword = '') => {
-    const{ data } = await axios.get(`/api/products?keyword=${keyword}`);
+    async ({ keyword = '', pageNumber = 1, sort = 'last-added' }) => {
+      const{ data } = await axios.get(
+        `/api/products?keyword=${keyword}&pageNumber=${pageNumber}&sort=${sort}`
+      );
     return data;
 });
 // 2. Create a new product
@@ -92,34 +94,16 @@ const initialState = {
   // state management
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
-
-  // pagination
-  pagination: {
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 4,
-  }
+  page: 1,
+  pages: 1,
 };
 
 // --- SLICE ---
 const productSlice = createSlice({
   name: 'products',
   initialState,
-  // Standard Reducers (Synchronous logic)
+  
   reducers: {
-    sortProducts: (state, action) => {
-      const sortType = action.payload;
-      if (sortType === 'price-asc') {
-        // price from low to high
-        state.products.sort((a, b) => a.price - b.price);
-      } else if (sortType === 'price-desc') {
-        // price from high to low
-        state.products.sort((a, b) => b.price - a.price);
-      } else if (sortType === 'last-added') {
-        // latest added 
-        state.products.sort((a, b) => (b._id > a._id ? 1 : -1));
-      }
-    },
   },
   // Extra Reducers (Asynchronous logic)
   extraReducers: (builder) => {
@@ -130,7 +114,9 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.products = action.payload;
+        state.products = action.payload.products;
+        state.page = action.payload.page;
+        state.pages = action.payload.pages;
       })
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';

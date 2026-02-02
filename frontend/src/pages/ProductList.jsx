@@ -4,40 +4,35 @@ import {
   Grid, Container, Typography, Button, Box, 
   Select, MenuItem, FormControl, Pagination
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import ProductCard from '../components/Product/ProductCard';
 import { sortProducts, fetchProducts } from '../store/productSlice'; // import sort action from product slice
 
 
 const ProductList = () => {
   const dispatch = useDispatch();
+  const { keyword } = useParams();
+
   const { products } = useSelector((state) => state.products);
   const { status } = useSelector((state) => state.products);
+  const { pages } = useSelector((state) => state.products);
+
   const [sort, setSort] = useState('last-added'); // default sort state
+  const [page, setPage] = useState(1);
 
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const isAdmin = isAuthenticated && user && user.role === 'admin';
 
   useEffect(() => {
-    if (status === 'idle'){
-      dispatch(fetchProducts());
-    }
-  }, [status, dispatch])
-
-  //pagination states
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 8;
- // Calculate total pages
-  const count = Math.ceil(products.length / itemsPerPage);
-// Get current products for pagination
-  const currentProducts = products.slice(
-    (page - 1) * itemsPerPage, 
-    page * itemsPerPage
-  );
+    dispatch(fetchProducts({ 
+      keyword, 
+      pageNumber: page, 
+      sort: sort 
+    }));
+  }, [dispatch, keyword, page, sort]);
 
   const handlePageChange = (event, value) => {
-    // console.log("Current page:", value); 
-    // update page number
+    // console.log("Current page:", value);
     setPage(value);
     // scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth'});
@@ -47,7 +42,6 @@ const ProductList = () => {
   const handleSortChange = (event) => {
     const value = event.target.value;
     setSort(value);
-    dispatch(sortProducts(value)); // send action to sort products
     setPage(1); //back to first page after sorting
   };
 
@@ -107,7 +101,7 @@ const ProductList = () => {
 
       {/* product grid list */}
       <Grid container spacing={3} sx={{ justifyContent:{ xs: 'center', sm:'flex-start'}}}>
-        {currentProducts.map((product) => (
+        {products.map((product) => (
           // xs=12 (mobile: 1 per row), sm=6 (ipad: 2 per row), md=4 (laptop: 3 per row), lg=3 (monitor: 4 per row)
           <Grid key={product._id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }} sx={{ display: 'flex' }}>
             <ProductCard product={product} isAdmin={isAdmin} />
@@ -116,7 +110,7 @@ const ProductList = () => {
       </Grid>
 
       {/* Pagination area */}
-      {count > 1 && (
+      {pages > 1 && (
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'flex-end',
@@ -124,7 +118,7 @@ const ProductList = () => {
           mb: 2  
         }}>
           <Pagination
-            count={count}     
+            count={pages}     
             page={page}       
             onChange={handlePageChange}
             shape="rounded"    
