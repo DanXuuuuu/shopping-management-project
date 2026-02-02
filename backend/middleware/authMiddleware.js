@@ -7,6 +7,7 @@ const protect = async (req, res, next) => {
 
     if (
         req.headers.authorization &&
+        // check the request header if ... cuz jwt format like this 
         req.headers.authorization.startsWith('Bearer')
     ) {
         try {

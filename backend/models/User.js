@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
+        // remove space 
         trim: true,
         // validate email format 
         match:[/^\S+@\S+\.\S+$/, 'Invalid Email input!']

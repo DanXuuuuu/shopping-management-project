@@ -4,7 +4,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 const BASE_URL = 'http://localhost:8080/api/auth';
 
 
-// keep it could protect the page fresh stable 
+// helper function - restore the user from localStorage, protect the page fresh stable 
 const getUserFromStorage = () => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -70,6 +70,7 @@ export const login = createAsyncThunk(
       //fail situation 
       if (!res.ok) {
         if (res.status === 404) {
+            // pass the error message to redux state
           return rejectWithValue('User not found');
         }
         if (res.status === 401) {
@@ -81,7 +82,7 @@ export const login = createAsyncThunk(
         );
       }
 
-      // login success 
+      // login success - save user and token  to localstorage, kept the state when refresh
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
 

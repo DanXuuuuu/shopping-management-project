@@ -3,7 +3,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// generateJWT func
+// generateJWT func - helper
 const generateToken = (userId) =>{
     // return encrypted token string
     return jwt.sign(
@@ -91,7 +91,7 @@ exports.login = async(req, res, next)=>{
         }
         // check the user exist 
         const user = await User.findOne({ email });
-
+   
         if(!user){
             const err = new Error('User not found, please sign up');
             err.statusCode = 404;
@@ -100,7 +100,7 @@ exports.login = async(req, res, next)=>{
         
         // compare if the password match 
         const isValidPassword = await user.comparePassword(password);
-
+     // error handling 
         if(!isValidPassword){
             const err = new Error('Invalid email or password');
             err.statusCode = 401;
